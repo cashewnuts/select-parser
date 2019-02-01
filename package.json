@@ -1,0 +1,34 @@
+{
+  "name": "select-sqlite-parser",
+  "version": "0.1.0",
+  "description": "Select SQL parser compatible with sqlite",
+  "main": "dist/index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "npm run compile && jest",
+    "compile": "tsc",
+    "antlr4": "antlr4 -o lib -Dlanguage=Javascript grammer/SSQL.g4"
+  },
+  "keywords": [
+    "SELECT",
+    "select",
+    "sqlite",
+    "javascript",
+    "js",
+    "parser",
+    "node"
+  ],
+  "author": "steave6",
+  "license": "MIT",
+  "dependencies": {
+    "chevrotain": "^4.2.0",
+    "xregexp": "^4.2.4"
+  },
+  "devDependencies": {
+    "@types/xregexp": "^3.0.29",
+    "jest": "^24.0.0",
+    "typescript": "^3.2.4"
+  }
+}
