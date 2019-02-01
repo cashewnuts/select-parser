@@ -1,5 +1,5 @@
 {
-  "name": "select-sqlite-parser",
+  "name": "select-parser",
   "version": "0.1.0",
   "description": "Select SQL parser compatible with sqlite",
   "main": "dist/index.js",

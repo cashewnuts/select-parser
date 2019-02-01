@@ -1,4 +1,4 @@
-var parse = require('../dist/select-sqlite-parser');
+var parse = require('../dist/select-parser');
 
 
 test('adds 1 + 2 to equal 3', () => {
