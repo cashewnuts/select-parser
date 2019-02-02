@@ -1,8 +1,57 @@
-var parse = require('../dist/select-parser');
+var { parse } = require('../dist/select-parser');
+var _ = require('lodash')
 
 
-test('adds 1 + 2 to equal 3', () => {
-  var result = parse('SELECT * from x')
-  console.log(result)
-  expect((1 * 3).length).toBe(3);
-});
+describe('Normal parse', () => {
+  test('parse basic select', () => {
+    var result = parse('SELECT * from test')
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors.length).toBe(0)
+    expect(parseErrors.length).toBe(0)
+  });
+  
+  test('parse table name is wrapped with []', () => {
+    var result = parse('SELECT * from [test]')
+    // console.log(result)
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors.length).toBe(0)
+    expect(parseErrors.length).toBe(0)
+  })
+  
+  test('parse even table name starts with number', () => {
+    var result = parse('SELECT * from 0test')
+    // console.log(result)
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors.length).toBe(0)
+    expect(parseErrors.length).toBe(0)
+  })
+})
+
+
+// Test for error
+describe('Error', () => {
+  /** test Identifier */
+  test('error table name contains one double quote', () => {
+    var result = parse('SELECT * from "start"rest"')
+    const { cst, lexErrors, parseErrors } = result
+    expect(_.get(lexErrors, '[0].message')).toContain('unexpected character:')
+    expect(parseErrors).toHaveLength(0)
+  })
+  
+  test('error from clause does not exists', () => {
+    var result = parse('SELECT *')
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors.length).toBe(0)
+    expect(_.get(parseErrors, '[0].name')).toBe('MismatchedTokenException')
+  })
+})
+
+// Gray zone
+describe('Grey zone', () => {
+  test('parse even table name is keyword', () => {
+    var result = parse('SELECT * FROM from')
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors.length).toBe(0)
+    expect(parseErrors.length).toBe(0)
+  })
+})

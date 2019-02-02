@@ -13,9 +13,8 @@ import XRegExp from 'xregexp'
 const fragments: any = {}
 
 // A utility to create re-usable fragments using xRegExp
-function FRAGMENT(name: string, def: string | RegExp) {
-  const _def = def instanceof RegExp ? def.toString() : def
-  fragments[name] = XRegExp.build(_def, fragments)
+function FRAGMENT(name: string, def: any) {
+  fragments[name] = XRegExp.build(def, fragments)
 }
 
 // a utility to create a pattern using previously defined fragments
@@ -27,15 +26,15 @@ function MAKE_PATTERN(def: string, flags?: string) {
 FRAGMENT("DIGIT", "[0-9]")
 FRAGMENT("E", "[eE]")
 // IDENTIFIERS
-FRAGMENT("DQ_IDENTIFIER", "\"()*\"")
-FRAGMENT("SQ_IDENTIFIER", "`(~`|``)*`")
-FRAGMENT("WP_IDENTIFIER", "\[~\]*\]")
-FRAGMENT("CHAR_IDENTIFIER", "[a-zA-Z_][a-zA-Z_0-9]*")
-FRAGMENT("IDENTIFIER", MAKE_PATTERN("{{DQ_IDENTIFIER}}|{{SQ_IDENTIFIER}}|{{WP_IDENTIFIER}}|{{CHAR_IDENTIFIER}}"))
+FRAGMENT("DQ_IDENTIFIER", '"([^"]|"")*"')
+FRAGMENT("BQ_IDENTIFIER", "`([^`]|``)*`")
+FRAGMENT("WP_IDENTIFIER", "\\[[^\\]]*\\]")
+FRAGMENT("CHAR_IDENTIFIER", "[a-zA-Z_$#0-9]+")
+FRAGMENT("IDENTIFIER", MAKE_PATTERN("{{DQ_IDENTIFIER}}|{{BQ_IDENTIFIER}}|{{WP_IDENTIFIER}}|{{CHAR_IDENTIFIER}}"))
 // NUMERICS
 FRAGMENT("NORM_NUMERIC", MAKE_PATTERN("{{DIGIT}}+(\.{{DIGIT}})?({{E}}[-+]?{{DIGIT}}+)?"))
 FRAGMENT("DOT_NUMERIC", MAKE_PATTERN("\.{{DIGIT}}+({{E}}[-+]?{{DIGIT}}+)?"))
-FRAGMENT("STRING_LITERAL", "'(~'|'')*'")
+FRAGMENT("STRING_LITERAL", "'([^']|'')*'")
 
 const Scol = createToken({
   name: "Scol",
@@ -156,7 +155,7 @@ const BlobLiteral = createToken({
 
 const SinglelineComment = createToken({
   name: "SinglelineComment",
-  pattern: /--~[\r\n]*/,
+  pattern: /--[^\r\n]*/,
   group: "comments"
 })
 const MultilineComment = createToken({
@@ -355,24 +354,44 @@ const allTokens = [
   Eq,
   NotEq1,
   NotEq2,
+  // Keywords
+  ...keywordTokens,
+  Keyword,
   // Literals
-  NumericLiteral,
   Identifier,
   BindParameter,
   StringLiteral,
+  NumericLiteral,
   BlobLiteral,
   // Commentings
   SinglelineComment,
   MultilineComment,
-  // Keywords
-  ...keywordTokens,
-  Keyword,
 ]
-const JsonLexer = new Lexer(allTokens)
+const SelectLexer = new Lexer(allTokens)
 
 class SelectSqlParser extends Parser {
   constructor() {
-    super(allTokens)
+    super(allTokens, {
+      maxLookahead: 4,
+      ignoredIssues: {
+        select_core: {
+          OR2: true
+        },
+        table_or_subquery: {
+          OR: true,
+          OR2: true,
+        },
+        result_column: {
+          OR: true,
+        },
+        atomic_expr: {
+          OR: true,
+        },
+        syntax_expr: {
+          OR4: true
+        }
+      }
+    })
     this.performSelfAnalysis()
   }
 
@@ -381,109 +400,7 @@ class SelectSqlParser extends Parser {
   // about the API of our Parser, so referencing an invalid rule name (this.SUBRULE(this.oopsType);)
   // is now a TypeScript compilation error.
   public sql_stmt = this.RULE("sql_stmt", () => {
-    this.OR([
-      // using ES6 Arrow functions to reduce verbosity.
-      { ALT: () => this.SUBRULE(this.compound_select_stmt) },
-      { ALT: () => this.SUBRULE(this.factored_select_stmt) },
-      { ALT: () => this.SUBRULE(this.simple_select_stmt) },
-      { ALT: () => this.SUBRULE(this.select_stmt) },
-    ])
-  })
-
-  /**
-   * Compound select statement
-   */
-  private compound_select_stmt = this.RULE("compound_select_stmt", () => {
-    this.OPTION(() => this.SUBRULE(this.with_clause))
-
-    // Two or more
-    this.SUBRULE(this.select_core)
-    this.AT_LEAST_ONE(() => {
-      this.SUBRULE(this.compound_operator)
-      this.SUBRULE2(this.select_core)
-    })
-
-    this.OPTION2(() => { // Order
-      this.CONSUME(K_ORDER)
-      this.CONSUME(K_BY)
-      this.AT_LEAST_ONE_SEP({
-        SEP: Comma,
-        DEF: () => this.SUBRULE(this.ordering_term)
-      })
-    })
-    this.OPTION3(() => { // Limit
-      this.CONSUME(K_LIMIT)
-      this.SUBRULE(this.expr)
-      this.OPTION4(() => {
-        this.OR([
-          { ALT: () => this.CONSUME(K_OFFSET) },
-          { ALT: () => this.CONSUME(Comma) },
-        ])
-      })
-      this.SUBRULE2(this.expr)
-    })
-  })
-
-  /**
-   * Factored select statement
-   * one or more
-   */
-  private factored_select_stmt = this.RULE("factored_select_stmt", () => {
-    this.OPTION(() => this.SUBRULE(this.with_clause))
-
-    // At least one select_core
-    this.SUBRULE(this.select_core)
-    this.MANY(() => {
-      this.SUBRULE(this.compound_operator)
-      this.SUBRULE1(this.select_core)
-    })
-
-    this.OPTION2(() => { // Order
-      this.CONSUME(K_ORDER)
-      this.CONSUME(K_BY)
-      this.AT_LEAST_ONE_SEP({
-        SEP: Comma,
-        DEF: () => this.SUBRULE(this.ordering_term)
-      })
-    })
-    this.OPTION3(() => { // Limit
-      this.CONSUME(K_LIMIT)
-      this.SUBRULE(this.expr)
-      this.OPTION4(() => {
-        this.OR([
-          { ALT: () => this.CONSUME(K_OFFSET) },
-          { ALT: () => this.CONSUME(Comma) },
-        ])
-      })
-      this.SUBRULE1(this.expr)
-    })
-  })
-
-  /**
-   * Simple select statement
-   */
-  private simple_select_stmt = this.RULE("simple_select_stmt", () => {
-    this.OPTION(() => this.SUBRULE(this.with_clause))
-    this.SUBRULE(this.select_core)
-    this.OPTION2(() => { // Order
-      this.CONSUME(K_ORDER)
-      this.CONSUME(K_BY)
-      this.AT_LEAST_ONE_SEP({
-        SEP: Comma,
-        DEF: () => this.SUBRULE(this.ordering_term)
-      })
-    })
-    this.OPTION3(() => { // Limit
-      this.CONSUME(K_LIMIT)
-      this.SUBRULE(this.expr)
-      this.OPTION4(() => {
-        this.OR([
-          { ALT: () => this.CONSUME(K_OFFSET) },
-          { ALT: () => this.CONSUME(Comma) },
-        ])
-      })
-      this.SUBRULE1(this.expr)
-    })
+    this.SUBRULE(this.select_stmt)
   })
 
   /**
@@ -534,18 +451,10 @@ class SelectSqlParser extends Parser {
           SEP: Comma,
           DEF: () => this.SUBRULE(this.result_column)
         })
-        this.OPTION2(() => { // K_FROM
-          this.CONSUME(K_FROM)
-          this.OR2([
-            { ALT: () => {
-              this.AT_LEAST_ONE_SEP1({
-                SEP: Comma,
-                DEF: () => this.SUBRULE(this.table_or_subquery)
-              })
-            }},
-            { ALT: () => this.SUBRULE(this.join_clause)}
-          ])
-        })
+
+        this.CONSUME(K_FROM) // K_FROM
+        this.SUBRULE(this.table_or_subquery)
+
         this.OPTION3(() => { // K_WHERE
           this.CONSUME(K_WHERE)
           this.SUBRULE(this.expr)
@@ -588,7 +497,7 @@ class SelectSqlParser extends Parser {
    * Type name
    */
   private type_name = this.RULE("type_name", () => {
-    this.AT_LEAST_ONE(this.name)
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.name))
     this.OPTION(() => {
       this.CONSUME(OpenPar)
       this.MANY_SEP({
@@ -601,6 +510,28 @@ class SelectSqlParser extends Parser {
 
   // TODO
   private expr = this.RULE("expr", () => {
+    this.SUBRULE(this.or_expr)
+    // this.OR([
+    //   { ALT: () => this.SUBRULE(this.or_expr) },
+    //   // NOT IMPLEMENT: function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
+    //   { ALT: () => {
+    //     this.CONSUME(OpenPar)
+    //     this.SUBRULE5(this.expr)
+    //     this.CONSUME(ClosePar)
+    //   }},
+    //   { ALT: () => {
+    //     this.CONSUME(K_CAST)
+    //     this.CONSUME1(OpenPar)
+    //     this.SUBRULE6(this.expr)
+    //     this.CONSUME(K_AS)
+    //     this.SUBRULE(this.type_name)
+    //     this.CONSUME1(ClosePar)
+    //   }},
+    //   // TODO rest after K_COLLATE
+    // ])
+  })
+
+  private atomic_expr = this.RULE("atomic_expr", () => {
     this.OR([
       { ALT: () => this.SUBRULE(this.literal_value) },
       { ALT: () => this.CONSUME(BindParameter) },
@@ -619,46 +550,6 @@ class SelectSqlParser extends Parser {
         this.SUBRULE(this.unary_operator)
         this.SUBRULE(this.expr)
       }},
-      { ALT: () => { // expr '||' expr
-        this.SUBRULE(this.pipe_expr)
-      }},
-      { ALT: () => { // expr ( '*' | '/' | '%' ) expr
-        this.SUBRULE(this.math1_expr)
-      }},
-      { ALT: () => { // expr ( '+' | '-' ) expr
-        this.SUBRULE(this.math2_expr)
-      }},
-      { ALT: () => { // expr ( '<<' | '>>' | '&' | '|' ) expr
-        this.SUBRULE(this.binary_expr)
-      }},
-      { ALT: () => { // expr ( '=' | '==' | '!=' | '<>' | K_IS | K_IS K_NOT | K_IN | K_LIKE | K_GLOB | K_MATCH | K_REGEXP) expr
-        this.SUBRULE(this.syntax_expr)
-      }},
-      { ALT: () => {
-        this.SUBRULE1(this.expr)
-        this.CONSUME(K_AND)
-        this.SUBRULE2(this.expr)
-      }},
-      { ALT: () => {
-        this.SUBRULE3(this.expr)
-        this.CONSUME(K_OR)
-        this.SUBRULE4(this.expr)
-      }},
-      // NOT IMPLEMENT: function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
-      { ALT: () => {
-        this.CONSUME(OpenPar)
-        this.SUBRULE5(this.expr)
-        this.CONSUME(ClosePar)
-      }},
-      { ALT: () => {
-        this.CONSUME(K_CAST)
-        this.CONSUME1(OpenPar)
-        this.SUBRULE6(this.expr)
-        this.CONSUME(K_AS)
-        this.SUBRULE(this.type_name)
-        this.CONSUME1(ClosePar)
-      }},
-      // TODO rest after K_COLLATE
     ])
   })
 
@@ -666,69 +557,104 @@ class SelectSqlParser extends Parser {
    * Pipe expr
    */
   private pipe_expr = this.RULE("pipe_expr", () => {
-    this.SUBRULE(this.expr)
-    this.CONSUME(Pipe2)
-    this.SUBRULE1(this.expr)
+    this.SUBRULE(this.atomic_expr)
+    this.MANY(() => {
+      this.CONSUME(Pipe2)
+      this.SUBRULE1(this.atomic_expr)
+    })
   })
 
   /**
    * Math1 expr
    */
-  private math1_expr = this.RULE("math1_expr", () => {
-    this.SUBRULE(this.expr)
-    this.OR([
-      { ALT: () => this.CONSUME(Star) },
-      { ALT: () => this.CONSUME(Div) },
-      { ALT: () => this.CONSUME(Mod) },
-    ])
-    this.SUBRULE1(this.expr)
+  private multiplication_expr = this.RULE("multiplication_expr", () => {
+    this.SUBRULE(this.pipe_expr)
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(Star) },
+        { ALT: () => this.CONSUME(Div) },
+        { ALT: () => this.CONSUME(Mod) },
+      ])
+      this.SUBRULE1(this.pipe_expr)
+    })
   })
 
   /**
    * Math2 expr
    */
-  private math2_expr = this.RULE("math2_expr", () => {
-    this.SUBRULE(this.expr)
-    this.OR([
-      { ALT: () => this.CONSUME(Plus) },
-      { ALT: () => this.CONSUME(Minus) },
-    ])
-    this.SUBRULE1(this.expr)
+  private addition_expr = this.RULE("addition_expr", () => {
+    this.SUBRULE(this.multiplication_expr)
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(Plus) },
+        { ALT: () => this.CONSUME(Minus) },
+      ])
+      this.SUBRULE1(this.multiplication_expr)
+    })
   })
 
   /**
    * Binary expr
    */
   private binary_expr = this.RULE("binary_expr", () => {
-    this.SUBRULE(this.expr)
-    this.OR([
-      { ALT: () => this.CONSUME(Lt2) },
-      { ALT: () => this.CONSUME(Gt2) },
-      { ALT: () => this.CONSUME(Amp) },
-      { ALT: () => this.CONSUME(Pipe) },
-    ])
-    this.SUBRULE1(this.expr)
+    this.SUBRULE(this.addition_expr)
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(Lt2) },
+        { ALT: () => this.CONSUME(Gt2) },
+        { ALT: () => this.CONSUME(Amp) },
+        { ALT: () => this.CONSUME(Pipe) },
+      ])
+      this.SUBRULE1(this.addition_expr)
+    })
   })
 
+  /**
+   * Syntax expr
+   */
   private syntax_expr = this.RULE("syntax_expr", () => {
-    this.SUBRULE(this.expr)
-    this.OR4([
-      { ALT: () => this.CONSUME(Assign) },
-      { ALT: () => this.CONSUME(Eq) },
-      { ALT: () => this.CONSUME(NotEq1) },
-      { ALT: () => this.CONSUME(NotEq2) },
-      { ALT: () => this.CONSUME(K_IS) },
-      { ALT: () => {
-        this.CONSUME1(K_IS)
-        this.CONSUME(K_NOT)
-      }},
-      { ALT: () => this.CONSUME(K_IN) },
-      { ALT: () => this.CONSUME(K_LIKE) },
-      { ALT: () => this.CONSUME(K_GLOB) },
-      { ALT: () => this.CONSUME(K_MATCH) },
-      { ALT: () => this.CONSUME(K_REGEXP) },
-    ])
-    this.SUBRULE1(this.expr)
+    this.SUBRULE(this.binary_expr)
+    this.MANY(() => {
+      this.OR4([
+        { ALT: () => this.CONSUME(Assign) },
+        { ALT: () => this.CONSUME(Eq) },
+        { ALT: () => this.CONSUME(NotEq1) },
+        { ALT: () => this.CONSUME(NotEq2) },
+        { ALT: () => this.CONSUME(K_IS) },
+        { ALT: () => {
+          this.CONSUME1(K_IS)
+          this.CONSUME(K_NOT)
+        }},
+        { ALT: () => this.CONSUME(K_IN) },
+        { ALT: () => this.CONSUME(K_LIKE) },
+        { ALT: () => this.CONSUME(K_GLOB) },
+        { ALT: () => this.CONSUME(K_MATCH) },
+        { ALT: () => this.CONSUME(K_REGEXP) },
+      ])
+      this.SUBRULE1(this.binary_expr)
+    })
+  })
+
+  /**
+   * And expr
+   */
+  private and_expr = this.RULE("and_expr", () => {
+    this.SUBRULE(this.syntax_expr)
+    this.MANY(() => {
+      this.CONSUME(K_AND)
+      this.SUBRULE1(this.syntax_expr)
+    })
+  })
+
+  /**
+   * Or expr
+   */
+  private or_expr = this.RULE("or_expr", () => {
+    this.SUBRULE(this.and_expr)
+    this.MANY(() => {
+      this.CONSUME(K_OR)
+      this.SUBRULE1(this.and_expr)
+    })
   })
 
   /**
@@ -833,7 +759,7 @@ class SelectSqlParser extends Parser {
    */
   private join_clause = this.RULE("join_clause", () => {
     this.SUBRULE(this.table_or_subquery)
-    this.OPTION(() => {
+    this.MANY(() => {
       this.SUBRULE(this.join_operator)
       this.SUBRULE1(this.table_or_subquery)
       this.SUBRULE(this.join_constraint)
@@ -908,7 +834,7 @@ class SelectSqlParser extends Parser {
       this.AT_LEAST_ONE_SEP({
         SEP: Comma,
         DEF: () => {
-          this.column_name
+          this.SUBRULE(this.column_name)
         }
       })
       this.CONSUME(ClosePar)
@@ -921,10 +847,9 @@ class SelectSqlParser extends Parser {
 
   private compound_operator = this.RULE("compound_operator", () => {
     this.OR([
-      { ALT: () => this.CONSUME(K_UNION) },
       { ALT: () => {
-        this.CONSUME1(K_UNION)
-        this.CONSUME(K_ALL)
+        this.CONSUME(K_UNION)
+        this.OPTION(() => this.CONSUME(K_ALL))
       }},
       { ALT: () => this.CONSUME(K_INTERSECT) },
       { ALT: () => this.CONSUME(K_EXCEPT) },
@@ -982,13 +907,6 @@ class SelectSqlParser extends Parser {
   })
 
   /**
-   * Keyword
-   */
-  private keyword = this.RULE("keyword", () => {
-    this.CONSUME(Keyword)
-  })
-
-  /**
    * Names
    */
   private name = this.RULE("name", () => this.SUBRULE(this.any_name))
@@ -1005,7 +923,7 @@ class SelectSqlParser extends Parser {
   private any_name = this.RULE("any_name", () => {
     this.OR([
       { ALT: () => this.CONSUME(Identifier) },
-      { ALT: () => this.SUBRULE(this.keyword) },
+      { ALT: () => this.CONSUME(Keyword) },
       { ALT: () => this.CONSUME(StringLiteral) },
       { ALT: () => {
         this.CONSUME(OpenPar)
@@ -1020,7 +938,7 @@ class SelectSqlParser extends Parser {
 const parser = new SelectSqlParser()
 
 export function parse(text: string) {
-  const lexResult = JsonLexer.tokenize(text)
+  const lexResult = SelectLexer.tokenize(text)
   // setting a new input will RESET the parser instance's state.
   parser.input = lexResult.tokens
   // any top level rule may be used as an entry point

@@ -22,8 +22,7 @@ var xregexp_1 = __importDefault(require("xregexp"));
 var fragments = {};
 // A utility to create re-usable fragments using xRegExp
 function FRAGMENT(name, def) {
-    var _def = def instanceof RegExp ? def.toString() : def;
-    fragments[name] = xregexp_1.default.build(_def, fragments);
+    fragments[name] = xregexp_1.default.build(def, fragments);
 }
 // a utility to create a pattern using previously defined fragments
 function MAKE_PATTERN(def, flags) {
@@ -33,15 +32,15 @@ function MAKE_PATTERN(def, flags) {
 FRAGMENT("DIGIT", "[0-9]");
 FRAGMENT("E", "[eE]");
 // IDENTIFIERS
-FRAGMENT("DQ_IDENTIFIER", "\"()*\"");
-FRAGMENT("SQ_IDENTIFIER", "`(~`|``)*`");
-FRAGMENT("WP_IDENTIFIER", "\[~\]*\]");
-FRAGMENT("CHAR_IDENTIFIER", "[a-zA-Z_][a-zA-Z_0-9]*");
-FRAGMENT("IDENTIFIER", MAKE_PATTERN("{{DQ_IDENTIFIER}}|{{SQ_IDENTIFIER}}|{{WP_IDENTIFIER}}|{{CHAR_IDENTIFIER}}"));
+FRAGMENT("DQ_IDENTIFIER", '"([^"]|"")*"');
+FRAGMENT("BQ_IDENTIFIER", "`([^`]|``)*`");
+FRAGMENT("WP_IDENTIFIER", "\\[[^\\]]*\\]");
+FRAGMENT("CHAR_IDENTIFIER", "[a-zA-Z_$#0-9]+");
+FRAGMENT("IDENTIFIER", MAKE_PATTERN("{{DQ_IDENTIFIER}}|{{BQ_IDENTIFIER}}|{{WP_IDENTIFIER}}|{{CHAR_IDENTIFIER}}"));
 // NUMERICS
 FRAGMENT("NORM_NUMERIC", MAKE_PATTERN("{{DIGIT}}+(\.{{DIGIT}})?({{E}}[-+]?{{DIGIT}}+)?"));
 FRAGMENT("DOT_NUMERIC", MAKE_PATTERN("\.{{DIGIT}}+({{E}}[-+]?{{DIGIT}}+)?"));
-FRAGMENT("STRING_LITERAL", "'(~'|'')*'");
+FRAGMENT("STRING_LITERAL", "'([^']|'')*'");
 var Scol = chevrotain_1.createToken({
     name: "Scol",
     pattern: ";",
@@ -160,7 +159,7 @@ var BlobLiteral = chevrotain_1.createToken({
 });
 var SinglelineComment = chevrotain_1.createToken({
     name: "SinglelineComment",
-    pattern: /--~[\r\n]*/,
+    pattern: /--[^\r\n]*/,
     group: "comments"
 });
 var MultilineComment = chevrotain_1.createToken({
@@ -354,125 +353,50 @@ var allTokens = [
     GtEq,
     Eq,
     NotEq1,
-    NotEq2,
+    NotEq2
+].concat(keywordTokens, [
+    Keyword,
     // Literals
-    NumericLiteral,
     Identifier,
     BindParameter,
     StringLiteral,
+    NumericLiteral,
     BlobLiteral,
     // Commentings
     SinglelineComment,
-    MultilineComment
-].concat(keywordTokens, [
-    Keyword,
+    MultilineComment,
 ]);
-var JsonLexer = new chevrotain_1.Lexer(allTokens);
+var SelectLexer = new chevrotain_1.Lexer(allTokens);
 var SelectSqlParser = /** @class */ (function (_super) {
     __extends(SelectSqlParser, _super);
     function SelectSqlParser() {
-        var _this = _super.call(this, allTokens) || this;
+        var _this = _super.call(this, allTokens, {
+            maxLookahead: 4,
+            ignoredIssues: {
+                select_core: {
+                    OR2: true
+                },
+                table_or_subquery: {
+                    OR: true,
+                    OR2: true,
+                },
+                result_column: {
+                    OR: true,
+                },
+                atomic_expr: {
+                    OR: true,
+                },
+                syntax_expr: {
+                    OR4: true
+                }
+            }
+        }) || this;
         // In TypeScript the parsing rules are explicitly defined as class instance properties
         // This allows for using access control (public/private/protected) and more importantly "informs" the TypeScript compiler
         // about the API of our Parser, so referencing an invalid rule name (this.SUBRULE(this.oopsType);)
         // is now a TypeScript compilation error.
         _this.sql_stmt = _this.RULE("sql_stmt", function () {
-            _this.OR([
-                // using ES6 Arrow functions to reduce verbosity.
-                { ALT: function () { return _this.SUBRULE(_this.compound_select_stmt); } },
-                { ALT: function () { return _this.SUBRULE(_this.factored_select_stmt); } },
-                { ALT: function () { return _this.SUBRULE(_this.simple_select_stmt); } },
-                { ALT: function () { return _this.SUBRULE(_this.select_stmt); } },
-            ]);
-        });
-        /**
-         * Compound select statement
-         */
-        _this.compound_select_stmt = _this.RULE("compound_select_stmt", function () {
-            _this.OPTION(function () { return _this.SUBRULE(_this.with_clause); });
-            // Two or more
-            _this.SUBRULE(_this.select_core);
-            _this.AT_LEAST_ONE(function () {
-                _this.SUBRULE(_this.compound_operator);
-                _this.SUBRULE2(_this.select_core);
-            });
-            _this.OPTION2(function () {
-                _this.CONSUME(K_ORDER);
-                _this.CONSUME(K_BY);
-                _this.AT_LEAST_ONE_SEP({
-                    SEP: Comma,
-                    DEF: function () { return _this.SUBRULE(_this.ordering_term); }
-                });
-            });
-            _this.OPTION3(function () {
-                _this.CONSUME(K_LIMIT);
-                _this.SUBRULE(_this.expr);
-                _this.OPTION4(function () {
-                    _this.OR([
-                        { ALT: function () { return _this.CONSUME(K_OFFSET); } },
-                        { ALT: function () { return _this.CONSUME(Comma); } },
-                    ]);
-                });
-                _this.SUBRULE2(_this.expr);
-            });
-        });
-        /**
-         * Factored select statement
-         * one or more
-         */
-        _this.factored_select_stmt = _this.RULE("factored_select_stmt", function () {
-            _this.OPTION(function () { return _this.SUBRULE(_this.with_clause); });
-            // At least one select_core
-            _this.SUBRULE(_this.select_core);
-            _this.MANY(function () {
-                _this.SUBRULE(_this.compound_operator);
-                _this.SUBRULE1(_this.select_core);
-            });
-            _this.OPTION2(function () {
-                _this.CONSUME(K_ORDER);
-                _this.CONSUME(K_BY);
-                _this.AT_LEAST_ONE_SEP({
-                    SEP: Comma,
-                    DEF: function () { return _this.SUBRULE(_this.ordering_term); }
-                });
-            });
-            _this.OPTION3(function () {
-                _this.CONSUME(K_LIMIT);
-                _this.SUBRULE(_this.expr);
-                _this.OPTION4(function () {
-                    _this.OR([
-                        { ALT: function () { return _this.CONSUME(K_OFFSET); } },
-                        { ALT: function () { return _this.CONSUME(Comma); } },
-                    ]);
-                });
-                _this.SUBRULE1(_this.expr);
-            });
-        });
-        /**
-         * Simple select statement
-         */
-        _this.simple_select_stmt = _this.RULE("simple_select_stmt", function () {
-            _this.OPTION(function () { return _this.SUBRULE(_this.with_clause); });
-            _this.SUBRULE(_this.select_core);
-            _this.OPTION2(function () {
-                _this.CONSUME(K_ORDER);
-                _this.CONSUME(K_BY);
-                _this.AT_LEAST_ONE_SEP({
-                    SEP: Comma,
-                    DEF: function () { return _this.SUBRULE(_this.ordering_term); }
-                });
-            });
-            _this.OPTION3(function () {
-                _this.CONSUME(K_LIMIT);
-                _this.SUBRULE(_this.expr);
-                _this.OPTION4(function () {
-                    _this.OR([
-                        { ALT: function () { return _this.CONSUME(K_OFFSET); } },
-                        { ALT: function () { return _this.CONSUME(Comma); } },
-                    ]);
-                });
-                _this.SUBRULE1(_this.expr);
-            });
+            _this.SUBRULE(_this.select_stmt);
         });
         /**
          * Select statement
@@ -521,18 +445,8 @@ var SelectSqlParser = /** @class */ (function (_super) {
                             SEP: Comma,
                             DEF: function () { return _this.SUBRULE(_this.result_column); }
                         });
-                        _this.OPTION2(function () {
-                            _this.CONSUME(K_FROM);
-                            _this.OR2([
-                                { ALT: function () {
-                                        _this.AT_LEAST_ONE_SEP1({
-                                            SEP: Comma,
-                                            DEF: function () { return _this.SUBRULE(_this.table_or_subquery); }
-                                        });
-                                    } },
-                                { ALT: function () { return _this.SUBRULE(_this.join_clause); } }
-                            ]);
-                        });
+                        _this.CONSUME(K_FROM); // K_FROM
+                        _this.SUBRULE(_this.table_or_subquery);
                         _this.OPTION3(function () {
                             _this.CONSUME(K_WHERE);
                             _this.SUBRULE(_this.expr);
@@ -574,7 +488,7 @@ var SelectSqlParser = /** @class */ (function (_super) {
          * Type name
          */
         _this.type_name = _this.RULE("type_name", function () {
-            _this.AT_LEAST_ONE(_this.name);
+            _this.AT_LEAST_ONE(function () { return _this.SUBRULE(_this.name); });
             _this.OPTION(function () {
                 _this.CONSUME(OpenPar);
                 _this.MANY_SEP({
@@ -586,6 +500,27 @@ var SelectSqlParser = /** @class */ (function (_super) {
         });
         // TODO
         _this.expr = _this.RULE("expr", function () {
+            _this.SUBRULE(_this.or_expr);
+            // this.OR([
+            //   { ALT: () => this.SUBRULE(this.or_expr) },
+            //   // NOT IMPLEMENT: function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
+            //   { ALT: () => {
+            //     this.CONSUME(OpenPar)
+            //     this.SUBRULE5(this.expr)
+            //     this.CONSUME(ClosePar)
+            //   }},
+            //   { ALT: () => {
+            //     this.CONSUME(K_CAST)
+            //     this.CONSUME1(OpenPar)
+            //     this.SUBRULE6(this.expr)
+            //     this.CONSUME(K_AS)
+            //     this.SUBRULE(this.type_name)
+            //     this.CONSUME1(ClosePar)
+            //   }},
+            //   // TODO rest after K_COLLATE
+            // ])
+        });
+        _this.atomic_expr = _this.RULE("atomic_expr", function () {
             _this.OR([
                 { ALT: function () { return _this.SUBRULE(_this.literal_value); } },
                 { ALT: function () { return _this.CONSUME(BindParameter); } },
@@ -604,110 +539,104 @@ var SelectSqlParser = /** @class */ (function (_super) {
                         _this.SUBRULE(_this.unary_operator);
                         _this.SUBRULE(_this.expr);
                     } },
-                { ALT: function () {
-                        _this.SUBRULE(_this.pipe_expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE(_this.math1_expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE(_this.math2_expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE(_this.binary_expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE(_this.syntax_expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE1(_this.expr);
-                        _this.CONSUME(K_AND);
-                        _this.SUBRULE2(_this.expr);
-                    } },
-                { ALT: function () {
-                        _this.SUBRULE3(_this.expr);
-                        _this.CONSUME(K_OR);
-                        _this.SUBRULE4(_this.expr);
-                    } },
-                // NOT IMPLEMENT: function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
-                { ALT: function () {
-                        _this.CONSUME(OpenPar);
-                        _this.SUBRULE5(_this.expr);
-                        _this.CONSUME(ClosePar);
-                    } },
-                { ALT: function () {
-                        _this.CONSUME(K_CAST);
-                        _this.CONSUME1(OpenPar);
-                        _this.SUBRULE6(_this.expr);
-                        _this.CONSUME(K_AS);
-                        _this.SUBRULE(_this.type_name);
-                        _this.CONSUME1(ClosePar);
-                    } },
             ]);
         });
         /**
          * Pipe expr
          */
         _this.pipe_expr = _this.RULE("pipe_expr", function () {
-            _this.SUBRULE(_this.expr);
-            _this.CONSUME(Pipe2);
-            _this.SUBRULE1(_this.expr);
+            _this.SUBRULE(_this.atomic_expr);
+            _this.MANY(function () {
+                _this.CONSUME(Pipe2);
+                _this.SUBRULE1(_this.atomic_expr);
+            });
         });
         /**
          * Math1 expr
          */
-        _this.math1_expr = _this.RULE("math1_expr", function () {
-            _this.SUBRULE(_this.expr);
-            _this.OR([
-                { ALT: function () { return _this.CONSUME(Star); } },
-                { ALT: function () { return _this.CONSUME(Div); } },
-                { ALT: function () { return _this.CONSUME(Mod); } },
-            ]);
-            _this.SUBRULE1(_this.expr);
+        _this.multiplication_expr = _this.RULE("multiplication_expr", function () {
+            _this.SUBRULE(_this.pipe_expr);
+            _this.MANY(function () {
+                _this.OR([
+                    { ALT: function () { return _this.CONSUME(Star); } },
+                    { ALT: function () { return _this.CONSUME(Div); } },
+                    { ALT: function () { return _this.CONSUME(Mod); } },
+                ]);
+                _this.SUBRULE1(_this.pipe_expr);
+            });
         });
         /**
          * Math2 expr
          */
-        _this.math2_expr = _this.RULE("math2_expr", function () {
-            _this.SUBRULE(_this.expr);
-            _this.OR([
-                { ALT: function () { return _this.CONSUME(Plus); } },
-                { ALT: function () { return _this.CONSUME(Minus); } },
-            ]);
-            _this.SUBRULE1(_this.expr);
+        _this.addition_expr = _this.RULE("addition_expr", function () {
+            _this.SUBRULE(_this.multiplication_expr);
+            _this.MANY(function () {
+                _this.OR([
+                    { ALT: function () { return _this.CONSUME(Plus); } },
+                    { ALT: function () { return _this.CONSUME(Minus); } },
+                ]);
+                _this.SUBRULE1(_this.multiplication_expr);
+            });
         });
         /**
          * Binary expr
          */
         _this.binary_expr = _this.RULE("binary_expr", function () {
-            _this.SUBRULE(_this.expr);
-            _this.OR([
-                { ALT: function () { return _this.CONSUME(Lt2); } },
-                { ALT: function () { return _this.CONSUME(Gt2); } },
-                { ALT: function () { return _this.CONSUME(Amp); } },
-                { ALT: function () { return _this.CONSUME(Pipe); } },
-            ]);
-            _this.SUBRULE1(_this.expr);
+            _this.SUBRULE(_this.addition_expr);
+            _this.MANY(function () {
+                _this.OR([
+                    { ALT: function () { return _this.CONSUME(Lt2); } },
+                    { ALT: function () { return _this.CONSUME(Gt2); } },
+                    { ALT: function () { return _this.CONSUME(Amp); } },
+                    { ALT: function () { return _this.CONSUME(Pipe); } },
+                ]);
+                _this.SUBRULE1(_this.addition_expr);
+            });
         });
+        /**
+         * Syntax expr
+         */
         _this.syntax_expr = _this.RULE("syntax_expr", function () {
-            _this.SUBRULE(_this.expr);
-            _this.OR4([
-                { ALT: function () { return _this.CONSUME(Assign); } },
-                { ALT: function () { return _this.CONSUME(Eq); } },
-                { ALT: function () { return _this.CONSUME(NotEq1); } },
-                { ALT: function () { return _this.CONSUME(NotEq2); } },
-                { ALT: function () { return _this.CONSUME(K_IS); } },
-                { ALT: function () {
-                        _this.CONSUME1(K_IS);
-                        _this.CONSUME(K_NOT);
-                    } },
-                { ALT: function () { return _this.CONSUME(K_IN); } },
-                { ALT: function () { return _this.CONSUME(K_LIKE); } },
-                { ALT: function () { return _this.CONSUME(K_GLOB); } },
-                { ALT: function () { return _this.CONSUME(K_MATCH); } },
-                { ALT: function () { return _this.CONSUME(K_REGEXP); } },
-            ]);
-            _this.SUBRULE1(_this.expr);
+            _this.SUBRULE(_this.binary_expr);
+            _this.MANY(function () {
+                _this.OR4([
+                    { ALT: function () { return _this.CONSUME(Assign); } },
+                    { ALT: function () { return _this.CONSUME(Eq); } },
+                    { ALT: function () { return _this.CONSUME(NotEq1); } },
+                    { ALT: function () { return _this.CONSUME(NotEq2); } },
+                    { ALT: function () { return _this.CONSUME(K_IS); } },
+                    { ALT: function () {
+                            _this.CONSUME1(K_IS);
+                            _this.CONSUME(K_NOT);
+                        } },
+                    { ALT: function () { return _this.CONSUME(K_IN); } },
+                    { ALT: function () { return _this.CONSUME(K_LIKE); } },
+                    { ALT: function () { return _this.CONSUME(K_GLOB); } },
+                    { ALT: function () { return _this.CONSUME(K_MATCH); } },
+                    { ALT: function () { return _this.CONSUME(K_REGEXP); } },
+                ]);
+                _this.SUBRULE1(_this.binary_expr);
+            });
+        });
+        /**
+         * And expr
+         */
+        _this.and_expr = _this.RULE("and_expr", function () {
+            _this.SUBRULE(_this.syntax_expr);
+            _this.MANY(function () {
+                _this.CONSUME(K_AND);
+                _this.SUBRULE1(_this.syntax_expr);
+            });
+        });
+        /**
+         * Or expr
+         */
+        _this.or_expr = _this.RULE("or_expr", function () {
+            _this.SUBRULE(_this.and_expr);
+            _this.MANY(function () {
+                _this.CONSUME(K_OR);
+                _this.SUBRULE1(_this.and_expr);
+            });
         });
         /**
          * Ordering term
@@ -808,7 +737,7 @@ var SelectSqlParser = /** @class */ (function (_super) {
          */
         _this.join_clause = _this.RULE("join_clause", function () {
             _this.SUBRULE(_this.table_or_subquery);
-            _this.OPTION(function () {
+            _this.MANY(function () {
                 _this.SUBRULE(_this.join_operator);
                 _this.SUBRULE1(_this.table_or_subquery);
                 _this.SUBRULE(_this.join_constraint);
@@ -879,7 +808,7 @@ var SelectSqlParser = /** @class */ (function (_super) {
                 _this.AT_LEAST_ONE_SEP({
                     SEP: Comma,
                     DEF: function () {
-                        _this.column_name;
+                        _this.SUBRULE(_this.column_name);
                     }
                 });
                 _this.CONSUME(ClosePar);
@@ -891,10 +820,9 @@ var SelectSqlParser = /** @class */ (function (_super) {
         });
         _this.compound_operator = _this.RULE("compound_operator", function () {
             _this.OR([
-                { ALT: function () { return _this.CONSUME(K_UNION); } },
                 { ALT: function () {
-                        _this.CONSUME1(K_UNION);
-                        _this.CONSUME(K_ALL);
+                        _this.CONSUME(K_UNION);
+                        _this.OPTION(function () { return _this.CONSUME(K_ALL); });
                     } },
                 { ALT: function () { return _this.CONSUME(K_INTERSECT); } },
                 { ALT: function () { return _this.CONSUME(K_EXCEPT); } },
@@ -947,12 +875,6 @@ var SelectSqlParser = /** @class */ (function (_super) {
             ]);
         });
         /**
-         * Keyword
-         */
-        _this.keyword = _this.RULE("keyword", function () {
-            _this.CONSUME(Keyword);
-        });
-        /**
          * Names
          */
         _this.name = _this.RULE("name", function () { return _this.SUBRULE(_this.any_name); });
@@ -968,7 +890,7 @@ var SelectSqlParser = /** @class */ (function (_super) {
         _this.any_name = _this.RULE("any_name", function () {
             _this.OR([
                 { ALT: function () { return _this.CONSUME(Identifier); } },
-                { ALT: function () { return _this.SUBRULE(_this.keyword); } },
+                { ALT: function () { return _this.CONSUME(Keyword); } },
                 { ALT: function () { return _this.CONSUME(StringLiteral); } },
                 { ALT: function () {
                         _this.CONSUME(OpenPar);
@@ -985,7 +907,7 @@ var SelectSqlParser = /** @class */ (function (_super) {
 // reuse the same parser instance.
 var parser = new SelectSqlParser();
 function parse(text) {
-    var lexResult = JsonLexer.tokenize(text);
+    var lexResult = SelectLexer.tokenize(text);
     // setting a new input will RESET the parser instance's state.
     parser.input = lexResult.tokens;
     // any top level rule may be used as an entry point
