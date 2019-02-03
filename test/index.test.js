@@ -6,24 +6,42 @@ describe('Normal parse', () => {
   test('parse basic select', () => {
     var result = parse('SELECT * from test')
     const { cst, lexErrors, parseErrors } = result
-    expect(lexErrors.length).toBe(0)
-    expect(parseErrors.length).toBe(0)
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
   });
   
   test('parse table name is wrapped with []', () => {
     var result = parse('SELECT * from [test]')
     // console.log(result)
     const { cst, lexErrors, parseErrors } = result
-    expect(lexErrors.length).toBe(0)
-    expect(parseErrors.length).toBe(0)
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
   })
   
   test('parse even table name starts with number', () => {
     var result = parse('SELECT * from 0test')
     // console.log(result)
     const { cst, lexErrors, parseErrors } = result
-    expect(lexErrors.length).toBe(0)
-    expect(parseErrors.length).toBe(0)
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
+  })
+
+  test('parse where has parentheses expression', () => {
+    var result = parse("SELECT * from x WHERE (test = '1')")
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
+  })
+
+  test('parse even table name is quated keyword (" or `)', () => {
+    var result = parse('SELECT * FROM "from"')
+    var { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
+    var result = parse('SELECT * FROM `from`')
+    var { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
   })
 })
 
@@ -41,17 +59,14 @@ describe('Error', () => {
   test('error from clause does not exists', () => {
     var result = parse('SELECT *')
     const { cst, lexErrors, parseErrors } = result
-    expect(lexErrors.length).toBe(0)
+    expect(lexErrors).toHaveLength(0)
     expect(_.get(parseErrors, '[0].name')).toBe('MismatchedTokenException')
   })
-})
-
-// Gray zone
-describe('Grey zone', () => {
-  test('parse even table name is keyword', () => {
+  
+  test('error when table name is keyword', () => {
     var result = parse('SELECT * FROM from')
     const { cst, lexErrors, parseErrors } = result
-    expect(lexErrors.length).toBe(0)
-    expect(parseErrors.length).toBe(0)
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(1)
   })
 })

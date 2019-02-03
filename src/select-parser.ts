@@ -175,156 +175,156 @@ const Keyword = createToken({
 })
 
 // http://www.sqlite.org/lang_keywords.html
-const K_ABORT = createToken({ name: "K_ABORT", pattern: /abort/i, categories: [Keyword] })
-const K_ACTION = createToken({ name: "K_ACTION", pattern: /action/i, categories: [Keyword] })
-const K_ADD = createToken({ name: "K_ADD", pattern: /add/i, categories: [Keyword] })
-const K_AFTER = createToken({ name: "K_AFTER", pattern: /after/i, categories: [Keyword] })
-const K_ALL = createToken({ name: "K_ALL", pattern: /all/i, categories: [Keyword] })
-const K_ALTER = createToken({ name: "K_ALTER", pattern: /alter/i, categories: [Keyword] })
-const K_ANALYZE = createToken({ name: "K_ANALYZE", pattern: /analyze/i, categories: [Keyword] })
-const K_AND = createToken({ name: "K_AND", pattern: /and/i, categories: [Keyword] })
-const K_AS = createToken({ name: "K_AS", pattern: /as/i, categories: [Keyword] })
-const K_ASC = createToken({ name: "K_ASC", pattern: /asc/i, categories: [Keyword] })
-const K_ATTACH = createToken({ name: "K_ATTACH", pattern: /attach/i, categories: [Keyword] })
-const K_AUTOINCREMENT = createToken({ name: "K_AUTOINCREMENT", pattern: /autoincrement/i, categories: [Keyword] })
-const K_BEFORE = createToken({ name: "K_BEFORE", pattern: /before/i, categories: [Keyword] })
-const K_BEGIN = createToken({ name: "K_BEGIN", pattern: /begin/i, categories: [Keyword] })
-const K_BETWEEN = createToken({ name: "K_BETWEEN", pattern: /between/i, categories: [Keyword] })
-const K_BY = createToken({ name: "K_BY", pattern: /by/i, categories: [Keyword] })
-const K_CASCADE = createToken({ name: "K_CASCADE", pattern: /cascade/i, categories: [Keyword] })
-const K_CASE = createToken({ name: "K_CASE", pattern: /case/i, categories: [Keyword] })
-const K_CAST = createToken({ name: "K_CAST", pattern: /cast/i, categories: [Keyword] })
-const K_CHECK = createToken({ name: "K_CHECK", pattern: /check/i, categories: [Keyword] })
-const K_COLLATE = createToken({ name: "K_COLLATE", pattern: /collate/i, categories: [Keyword] })
-const K_COLUMN = createToken({ name: "K_COLUMN", pattern: /column/i, categories: [Keyword] })
-const K_COMMIT = createToken({ name: "K_COMMIT", pattern: /commit/i, categories: [Keyword] })
-const K_CONFLICT = createToken({ name: "K_CONFLICT", pattern: /conflict/i, categories: [Keyword] })
-const K_CONSTRAINT = createToken({ name: "K_CONSTRAINT", pattern: /constraint/i, categories: [Keyword] })
-const K_CREATE = createToken({ name: "K_CREATE", pattern: /create/i, categories: [Keyword] })
-const K_CROSS = createToken({ name: "K_CROSS", pattern: /cross/i, categories: [Keyword] })
-const K_CURRENT_DATE = createToken({ name: "K_CURRENT_DATE", pattern: /current_date/i, categories: [Keyword] })
-const K_CURRENT_TIME = createToken({ name: "K_CURRENT_TIME", pattern: /current_time/i, categories: [Keyword] })
-const K_CURRENT_TIMESTAMP = createToken({ name: "K_CURRENT_TIMESTAMP", pattern: /current_timestamp/i, categories: [Keyword] })
-const K_DATABASE = createToken({ name: "K_DATABASE", pattern: /database/i, categories: [Keyword] })
-const K_DEFAULT = createToken({ name: "K_DEFAULT", pattern: /default/i, categories: [Keyword] })
-const K_DEFERRABLE = createToken({ name: "K_DEFERRABLE", pattern: /deferrable/i, categories: [Keyword] })
-const K_DEFERRED = createToken({ name: "K_DEFERRED", pattern: /deferred/i, categories: [Keyword] })
-const K_DELETE = createToken({ name: "K_DELETE", pattern: /delete/i, categories: [Keyword] })
-const K_DESC = createToken({ name: "K_DESC", pattern: /desc/i, categories: [Keyword] })
-const K_DETACH = createToken({ name: "K_DETACH", pattern: /detach/i, categories: [Keyword] })
-const K_DISTINCT = createToken({ name: "K_DISTINCT", pattern: /distinct/i, categories: [Keyword] })
-const K_DROP = createToken({ name: "K_DROP", pattern: /drop/i, categories: [Keyword] })
-const K_EACH = createToken({ name: "K_EACH", pattern: /each/i, categories: [Keyword] })
-const K_ELSE = createToken({ name: "K_ELSE", pattern: /else/i, categories: [Keyword] })
-const K_END = createToken({ name: "K_END", pattern: /end/i, categories: [Keyword] })
-const K_ESCAPE = createToken({ name: "K_ESCAPE", pattern: /escape/i, categories: [Keyword] })
-const K_EXCEPT = createToken({ name: "K_EXCEPT", pattern: /except/i, categories: [Keyword] })
-const K_EXCLUSIVE = createToken({ name: "K_EXCLUSIVE", pattern: /exclusive/i, categories: [Keyword] })
-const K_EXISTS = createToken({ name: "K_EXISTS", pattern: /exists/i, categories: [Keyword] })
-const K_EXPLAIN = createToken({ name: "K_EXPLAIN", pattern: /explain/i, categories: [Keyword] })
-const K_FAIL = createToken({ name: "K_FAIL", pattern: /fail/i, categories: [Keyword] })
-const K_FOR = createToken({ name: "K_FOR", pattern: /for/i, categories: [Keyword] })
-const K_FOREIGN = createToken({ name: "K_FOREIGN", pattern: /foreign/i, categories: [Keyword] })
-const K_FROM = createToken({ name: "K_FROM", pattern: /from/i, categories: [Keyword] })
-const K_FULL = createToken({ name: "K_FULL", pattern: /full/i, categories: [Keyword] })
-const K_GLOB = createToken({ name: "K_GLOB", pattern: /glob/i, categories: [Keyword] })
-const K_GROUP = createToken({ name: "K_GROUP", pattern: /group/i, categories: [Keyword] })
-const K_HAVING = createToken({ name: "K_HAVING", pattern: /having/i, categories: [Keyword] })
-const K_IF = createToken({ name: "K_IF", pattern: /if/i, categories: [Keyword] })
-const K_IGNORE = createToken({ name: "K_IGNORE", pattern: /ignore/i, categories: [Keyword] })
-const K_IMMEDIATE = createToken({ name: "K_IMMEDIATE", pattern: /immediate/i, categories: [Keyword] })
-const K_IN = createToken({ name: "K_IN", pattern: /in/i, categories: [Keyword] })
-const K_INDEX = createToken({ name: "K_INDEX", pattern: /index/i, categories: [Keyword] })
-const K_INDEXED = createToken({ name: "K_INDEXED", pattern: /indexed/i, categories: [Keyword] })
-const K_INITIALLY = createToken({ name: "K_INITIALLY", pattern: /initially/i, categories: [Keyword] })
-const K_INNER = createToken({ name: "K_INNER", pattern: /inner/i, categories: [Keyword] })
-const K_INSERT = createToken({ name: "K_INSERT", pattern: /insert/i, categories: [Keyword] })
-const K_INSTEAD = createToken({ name: "K_INSTEAD", pattern: /instead/i, categories: [Keyword] })
-const K_INTERSECT = createToken({ name: "K_INTERSECT", pattern: /intersect/i, categories: [Keyword] })
-const K_INTO = createToken({ name: "K_INTO", pattern: /into/i, categories: [Keyword] })
-const K_IS = createToken({ name: "K_IS", pattern: /is/i, categories: [Keyword] })
-const K_ISNULL = createToken({ name: "K_ISNULL", pattern: /isnull/i, categories: [Keyword] })
-const K_JOIN = createToken({ name: "K_JOIN", pattern: /join/i, categories: [Keyword] })
-const K_KEY = createToken({ name: "K_KEY", pattern: /key/i, categories: [Keyword] })
-const K_LEFT = createToken({ name: "K_LEFT", pattern: /left/i, categories: [Keyword] })
-const K_LIKE = createToken({ name: "K_LIKE", pattern: /like/i, categories: [Keyword] })
-const K_LIMIT = createToken({ name: "K_LIMIT", pattern: /limit/i, categories: [Keyword] })
-const K_MATCH = createToken({ name: "K_MATCH", pattern: /match/i, categories: [Keyword] })
-const K_NATURAL = createToken({ name: "K_NATURAL", pattern: /natural/i, categories: [Keyword] })
-const K_NO = createToken({ name: "K_NO", pattern: /no/i, categories: [Keyword] })
-const K_NOT = createToken({ name: "K_NOT", pattern: /not/i, categories: [Keyword] })
-const K_NOTNULL = createToken({ name: "K_NOTNULL", pattern: /notnull/i, categories: [Keyword] })
-const K_NULL = createToken({ name: "K_NULL", pattern: /null/i, categories: [Keyword] })
-const K_OF = createToken({ name: "K_OF", pattern: /of/i, categories: [Keyword] })
-const K_OFFSET = createToken({ name: "K_OFFSET", pattern: /offset/i, categories: [Keyword] })
-const K_ON = createToken({ name: "K_ON", pattern: /on/i, categories: [Keyword] })
-const K_OR = createToken({ name: "K_OR", pattern: /or/i, categories: [Keyword] })
-const K_ORDER = createToken({ name: "K_ORDER", pattern: /order/i, categories: [Keyword] })
-const K_OUTER = createToken({ name: "K_OUTER", pattern: /outer/i, categories: [Keyword] })
-const K_PLAN = createToken({ name: "K_PLAN", pattern: /plan/i, categories: [Keyword] })
-const K_PRAGMA = createToken({ name: "K_PRAGMA", pattern: /pragma/i, categories: [Keyword] })
-const K_PRIMARY = createToken({ name: "K_PRIMARY", pattern: /primary/i, categories: [Keyword] })
-const K_QUERY = createToken({ name: "K_QUERY", pattern: /query/i, categories: [Keyword] })
-const K_RAISE = createToken({ name: "K_RAISE", pattern: /raise/i, categories: [Keyword] })
-const K_RECURSIVE = createToken({ name: "K_RECURSIVE", pattern: /recursive/i, categories: [Keyword] })
-const K_REFERENCES = createToken({ name: "K_REFERENCES", pattern: /references/i, categories: [Keyword] })
-const K_REGEXP = createToken({ name: "K_REGEXP", pattern: /regexp/i, categories: [Keyword] })
-const K_REINDEX = createToken({ name: "K_REINDEX", pattern: /reindex/i, categories: [Keyword] })
-const K_RELEASE = createToken({ name: "K_RELEASE", pattern: /release/i, categories: [Keyword] })
-const K_RENAME = createToken({ name: "K_RENAME", pattern: /rename/i, categories: [Keyword] })
-const K_REPLACE = createToken({ name: "K_REPLACE", pattern: /replace/i, categories: [Keyword] })
-const K_RESTRICT = createToken({ name: "K_RESTRICT", pattern: /restrict/i, categories: [Keyword] })
-const K_RIGHT = createToken({ name: "K_RIGHT", pattern: /right/i, categories: [Keyword] })
-const K_ROLLBACK = createToken({ name: "K_ROLLBACK", pattern: /rollback/i, categories: [Keyword] })
-const K_ROW = createToken({ name: "K_ROW", pattern: /row/i, categories: [Keyword] })
-const K_SAVEPOINT = createToken({ name: "K_SAVEPOINT", pattern: /savepoint/i, categories: [Keyword] })
-const K_SELECT = createToken({ name: "K_SELECT", pattern: /select/i, categories: [Keyword] })
-const K_SET = createToken({ name: "K_SET", pattern: /set/i, categories: [Keyword] })
-const K_TABLE = createToken({ name: "K_TABLE", pattern: /table/i, categories: [Keyword] })
-const K_TEMP = createToken({ name: "K_TEMP", pattern: /temp/i, categories: [Keyword] })
-const K_TEMPORARY = createToken({ name: "K_TEMPORARY", pattern: /temporary/i, categories: [Keyword] })
-const K_THEN = createToken({ name: "K_THEN", pattern: /then/i, categories: [Keyword] })
-const K_TO = createToken({ name: "K_TO", pattern: /to/i, categories: [Keyword] })
-const K_TRANSACTION = createToken({ name: "K_TRANSACTION", pattern: /transaction/i, categories: [Keyword] })
-const K_TRIGGER = createToken({ name: "K_TRIGGER", pattern: /trigger/i, categories: [Keyword] })
-const K_UNION = createToken({ name: "K_UNION", pattern: /union/i, categories: [Keyword] })
-const K_UNIQUE = createToken({ name: "K_UNIQUE", pattern: /unique/i, categories: [Keyword] })
-const K_UPDATE = createToken({ name: "K_UPDATE", pattern: /update/i, categories: [Keyword] })
-const K_USING = createToken({ name: "K_USING", pattern: /using/i, categories: [Keyword] })
-const K_VACUUM = createToken({ name: "K_VACUUM", pattern: /vacuum/i, categories: [Keyword] })
-const K_VALUES = createToken({ name: "K_VALUES", pattern: /values/i, categories: [Keyword] })
-const K_VIEW = createToken({ name: "K_VIEW", pattern: /view/i, categories: [Keyword] })
-const K_VIRTUAL = createToken({ name: "K_VIRTUAL", pattern: /virtual/i, categories: [Keyword] })
-const K_WHEN = createToken({ name: "K_WHEN", pattern: /when/i, categories: [Keyword] })
-const K_WHERE = createToken({ name: "K_WHERE", pattern: /where/i, categories: [Keyword] })
-const K_WITH = createToken({ name: "K_WITH", pattern: /with/i, categories: [Keyword] })
-const K_WITHOUT = createToken({ name: "K_WITHOUT", pattern: /without/i, categories: [Keyword] })
+const ABORT = createToken({ name: "ABORT", pattern: /abort/i, categories: [Keyword], longer_alt: Identifier })
+const ACTION = createToken({ name: "ACTION", pattern: /action/i, categories: [Keyword], longer_alt: Identifier })
+const ADD = createToken({ name: "ADD", pattern: /add/i, categories: [Keyword], longer_alt: Identifier })
+const AFTER = createToken({ name: "AFTER", pattern: /after/i, categories: [Keyword], longer_alt: Identifier })
+const ALL = createToken({ name: "ALL", pattern: /all/i, categories: [Keyword], longer_alt: Identifier })
+const ALTER = createToken({ name: "ALTER", pattern: /alter/i, categories: [Keyword], longer_alt: Identifier })
+const ANALYZE = createToken({ name: "ANALYZE", pattern: /analyze/i, categories: [Keyword], longer_alt: Identifier })
+const AND = createToken({ name: "AND", pattern: /and/i, categories: [Keyword], longer_alt: Identifier })
+const AS = createToken({ name: "AS", pattern: /as/i, categories: [Keyword], longer_alt: Identifier })
+const ASC = createToken({ name: "ASC", pattern: /asc/i, categories: [Keyword], longer_alt: Identifier })
+const ATTACH = createToken({ name: "ATTACH", pattern: /attach/i, categories: [Keyword], longer_alt: Identifier })
+const AUTOINCREMENT = createToken({ name: "AUTOINCREMENT", pattern: /autoincrement/i, categories: [Keyword], longer_alt: Identifier })
+const BEFORE = createToken({ name: "BEFORE", pattern: /before/i, categories: [Keyword], longer_alt: Identifier })
+const BEGIN = createToken({ name: "BEGIN", pattern: /begin/i, categories: [Keyword], longer_alt: Identifier })
+const BETWEEN = createToken({ name: "BETWEEN", pattern: /between/i, categories: [Keyword], longer_alt: Identifier })
+const BY = createToken({ name: "BY", pattern: /by/i, categories: [Keyword], longer_alt: Identifier })
+const CASCADE = createToken({ name: "CASCADE", pattern: /cascade/i, categories: [Keyword], longer_alt: Identifier })
+const CASE = createToken({ name: "CASE", pattern: /case/i, categories: [Keyword], longer_alt: Identifier })
+const CAST = createToken({ name: "CAST", pattern: /cast/i, categories: [Keyword], longer_alt: Identifier })
+const CHECK = createToken({ name: "CHECK", pattern: /check/i, categories: [Keyword], longer_alt: Identifier })
+const COLLATE = createToken({ name: "COLLATE", pattern: /collate/i, categories: [Keyword], longer_alt: Identifier })
+const COLUMN = createToken({ name: "COLUMN", pattern: /column/i, categories: [Keyword], longer_alt: Identifier })
+const COMMIT = createToken({ name: "COMMIT", pattern: /commit/i, categories: [Keyword], longer_alt: Identifier })
+const CONFLICT = createToken({ name: "CONFLICT", pattern: /conflict/i, categories: [Keyword], longer_alt: Identifier })
+const CONSTRAINT = createToken({ name: "CONSTRAINT", pattern: /constraint/i, categories: [Keyword], longer_alt: Identifier })
+const CREATE = createToken({ name: "CREATE", pattern: /create/i, categories: [Keyword], longer_alt: Identifier })
+const CROSS = createToken({ name: "CROSS", pattern: /cross/i, categories: [Keyword], longer_alt: Identifier })
+const CURRENT_DATE = createToken({ name: "CURRENT_DATE", pattern: /current_date/i, categories: [Keyword], longer_alt: Identifier })
+const CURRENT_TIME = createToken({ name: "CURRENT_TIME", pattern: /current_time/i, categories: [Keyword], longer_alt: Identifier })
+const CURRENT_TIMESTAMP = createToken({ name: "CURRENT_TIMESTAMP", pattern: /current_timestamp/i, categories: [Keyword], longer_alt: Identifier })
+const DATABASE = createToken({ name: "DATABASE", pattern: /database/i, categories: [Keyword], longer_alt: Identifier })
+const DEFAULT = createToken({ name: "DEFAULT", pattern: /default/i, categories: [Keyword], longer_alt: Identifier })
+const DEFERRABLE = createToken({ name: "DEFERRABLE", pattern: /deferrable/i, categories: [Keyword], longer_alt: Identifier })
+const DEFERRED = createToken({ name: "DEFERRED", pattern: /deferred/i, categories: [Keyword], longer_alt: Identifier })
+const DELETE = createToken({ name: "DELETE", pattern: /delete/i, categories: [Keyword], longer_alt: Identifier })
+const DESC = createToken({ name: "DESC", pattern: /desc/i, categories: [Keyword], longer_alt: Identifier })
+const DETACH = createToken({ name: "DETACH", pattern: /detach/i, categories: [Keyword], longer_alt: Identifier })
+const DISTINCT = createToken({ name: "DISTINCT", pattern: /distinct/i, categories: [Keyword], longer_alt: Identifier })
+const DROP = createToken({ name: "DROP", pattern: /drop/i, categories: [Keyword], longer_alt: Identifier })
+const EACH = createToken({ name: "EACH", pattern: /each/i, categories: [Keyword], longer_alt: Identifier })
+const ELSE = createToken({ name: "ELSE", pattern: /else/i, categories: [Keyword], longer_alt: Identifier })
+const END = createToken({ name: "END", pattern: /end/i, categories: [Keyword], longer_alt: Identifier })
+const ESCAPE = createToken({ name: "ESCAPE", pattern: /escape/i, categories: [Keyword], longer_alt: Identifier })
+const EXCEPT = createToken({ name: "EXCEPT", pattern: /except/i, categories: [Keyword], longer_alt: Identifier })
+const EXCLUSIVE = createToken({ name: "EXCLUSIVE", pattern: /exclusive/i, categories: [Keyword], longer_alt: Identifier })
+const EXISTS = createToken({ name: "EXISTS", pattern: /exists/i, categories: [Keyword], longer_alt: Identifier })
+const EXPLAIN = createToken({ name: "EXPLAIN", pattern: /explain/i, categories: [Keyword], longer_alt: Identifier })
+const FAIL = createToken({ name: "FAIL", pattern: /fail/i, categories: [Keyword], longer_alt: Identifier })
+const FOR = createToken({ name: "FOR", pattern: /for/i, categories: [Keyword], longer_alt: Identifier })
+const FOREIGN = createToken({ name: "FOREIGN", pattern: /foreign/i, categories: [Keyword], longer_alt: Identifier })
+const FROM = createToken({ name: "FROM", pattern: /from/i, categories: [Keyword], longer_alt: Identifier })
+const FULL = createToken({ name: "FULL", pattern: /full/i, categories: [Keyword], longer_alt: Identifier })
+const GLOB = createToken({ name: "GLOB", pattern: /glob/i, categories: [Keyword], longer_alt: Identifier })
+const GROUP = createToken({ name: "GROUP", pattern: /group/i, categories: [Keyword], longer_alt: Identifier })
+const HAVING = createToken({ name: "HAVING", pattern: /having/i, categories: [Keyword], longer_alt: Identifier })
+const IF = createToken({ name: "IF", pattern: /if/i, categories: [Keyword], longer_alt: Identifier })
+const IGNORE = createToken({ name: "IGNORE", pattern: /ignore/i, categories: [Keyword], longer_alt: Identifier })
+const IMMEDIATE = createToken({ name: "IMMEDIATE", pattern: /immediate/i, categories: [Keyword], longer_alt: Identifier })
+const IN = createToken({ name: "IN", pattern: /in/i, categories: [Keyword], longer_alt: Identifier })
+const INDEX = createToken({ name: "INDEX", pattern: /index/i, categories: [Keyword], longer_alt: Identifier })
+const INDEXED = createToken({ name: "INDEXED", pattern: /indexed/i, categories: [Keyword], longer_alt: Identifier })
+const INITIALLY = createToken({ name: "INITIALLY", pattern: /initially/i, categories: [Keyword], longer_alt: Identifier })
+const INNER = createToken({ name: "INNER", pattern: /inner/i, categories: [Keyword], longer_alt: Identifier })
+const INSERT = createToken({ name: "INSERT", pattern: /insert/i, categories: [Keyword], longer_alt: Identifier })
+const INSTEAD = createToken({ name: "INSTEAD", pattern: /instead/i, categories: [Keyword], longer_alt: Identifier })
+const INTERSECT = createToken({ name: "INTERSECT", pattern: /intersect/i, categories: [Keyword], longer_alt: Identifier })
+const INTO = createToken({ name: "INTO", pattern: /into/i, categories: [Keyword], longer_alt: Identifier })
+const IS = createToken({ name: "IS", pattern: /is/i, categories: [Keyword], longer_alt: Identifier })
+const ISNULL = createToken({ name: "ISNULL", pattern: /isnull/i, categories: [Keyword], longer_alt: Identifier })
+const JOIN = createToken({ name: "JOIN", pattern: /join/i, categories: [Keyword], longer_alt: Identifier })
+const KEY = createToken({ name: "KEY", pattern: /key/i, categories: [Keyword], longer_alt: Identifier })
+const LEFT = createToken({ name: "LEFT", pattern: /left/i, categories: [Keyword], longer_alt: Identifier })
+const LIKE = createToken({ name: "LIKE", pattern: /like/i, categories: [Keyword], longer_alt: Identifier })
+const LIMIT = createToken({ name: "LIMIT", pattern: /limit/i, categories: [Keyword], longer_alt: Identifier })
+const MATCH = createToken({ name: "MATCH", pattern: /match/i, categories: [Keyword], longer_alt: Identifier })
+const NATURAL = createToken({ name: "NATURAL", pattern: /natural/i, categories: [Keyword], longer_alt: Identifier })
+const NO = createToken({ name: "NO", pattern: /no/i, categories: [Keyword], longer_alt: Identifier })
+const NOT = createToken({ name: "NOT", pattern: /not/i, categories: [Keyword], longer_alt: Identifier })
+const NOTNULL = createToken({ name: "NOTNULL", pattern: /notnull/i, categories: [Keyword], longer_alt: Identifier })
+const NULL = createToken({ name: "NULL", pattern: /null/i, categories: [Keyword], longer_alt: Identifier })
+const OF = createToken({ name: "OF", pattern: /of/i, categories: [Keyword], longer_alt: Identifier })
+const OFFSET = createToken({ name: "OFFSET", pattern: /offset/i, categories: [Keyword], longer_alt: Identifier })
+const ON = createToken({ name: "ON", pattern: /on/i, categories: [Keyword], longer_alt: Identifier })
+const OR = createToken({ name: "OR", pattern: /or/i, categories: [Keyword], longer_alt: Identifier })
+const ORDER = createToken({ name: "ORDER", pattern: /order/i, categories: [Keyword], longer_alt: Identifier })
+const OUTER = createToken({ name: "OUTER", pattern: /outer/i, categories: [Keyword], longer_alt: Identifier })
+const PLAN = createToken({ name: "PLAN", pattern: /plan/i, categories: [Keyword], longer_alt: Identifier })
+const PRAGMA = createToken({ name: "PRAGMA", pattern: /pragma/i, categories: [Keyword], longer_alt: Identifier })
+const PRIMARY = createToken({ name: "PRIMARY", pattern: /primary/i, categories: [Keyword], longer_alt: Identifier })
+const QUERY = createToken({ name: "QUERY", pattern: /query/i, categories: [Keyword], longer_alt: Identifier })
+const RAISE = createToken({ name: "RAISE", pattern: /raise/i, categories: [Keyword], longer_alt: Identifier })
+const RECURSIVE = createToken({ name: "RECURSIVE", pattern: /recursive/i, categories: [Keyword], longer_alt: Identifier })
+const REFERENCES = createToken({ name: "REFERENCES", pattern: /references/i, categories: [Keyword], longer_alt: Identifier })
+const REGEXP = createToken({ name: "REGEXP", pattern: /regexp/i, categories: [Keyword], longer_alt: Identifier })
+const REINDEX = createToken({ name: "REINDEX", pattern: /reindex/i, categories: [Keyword], longer_alt: Identifier })
+const RELEASE = createToken({ name: "RELEASE", pattern: /release/i, categories: [Keyword], longer_alt: Identifier })
+const RENAME = createToken({ name: "RENAME", pattern: /rename/i, categories: [Keyword], longer_alt: Identifier })
+const REPLACE = createToken({ name: "REPLACE", pattern: /replace/i, categories: [Keyword], longer_alt: Identifier })
+const RESTRICT = createToken({ name: "RESTRICT", pattern: /restrict/i, categories: [Keyword], longer_alt: Identifier })
+const RIGHT = createToken({ name: "RIGHT", pattern: /right/i, categories: [Keyword], longer_alt: Identifier })
+const ROLLBACK = createToken({ name: "ROLLBACK", pattern: /rollback/i, categories: [Keyword], longer_alt: Identifier })
+const ROW = createToken({ name: "ROW", pattern: /row/i, categories: [Keyword], longer_alt: Identifier })
+const SAVEPOINT = createToken({ name: "SAVEPOINT", pattern: /savepoint/i, categories: [Keyword], longer_alt: Identifier })
+const SELECT = createToken({ name: "SELECT", pattern: /select/i, categories: [Keyword], longer_alt: Identifier })
+const SET = createToken({ name: "SET", pattern: /set/i, categories: [Keyword], longer_alt: Identifier })
+const TABLE = createToken({ name: "TABLE", pattern: /table/i, categories: [Keyword], longer_alt: Identifier })
+const TEMP = createToken({ name: "TEMP", pattern: /temp/i, categories: [Keyword], longer_alt: Identifier })
+const TEMPORARY = createToken({ name: "TEMPORARY", pattern: /temporary/i, categories: [Keyword], longer_alt: Identifier })
+const THEN = createToken({ name: "THEN", pattern: /then/i, categories: [Keyword], longer_alt: Identifier })
+const TO = createToken({ name: "TO", pattern: /to/i, categories: [Keyword], longer_alt: Identifier })
+const TRANSACTION = createToken({ name: "TRANSACTION", pattern: /transaction/i, categories: [Keyword], longer_alt: Identifier })
+const TRIGGER = createToken({ name: "TRIGGER", pattern: /trigger/i, categories: [Keyword], longer_alt: Identifier })
+const UNION = createToken({ name: "UNION", pattern: /union/i, categories: [Keyword], longer_alt: Identifier })
+const UNIQUE = createToken({ name: "UNIQUE", pattern: /unique/i, categories: [Keyword], longer_alt: Identifier })
+const UPDATE = createToken({ name: "UPDATE", pattern: /update/i, categories: [Keyword], longer_alt: Identifier })
+const USING = createToken({ name: "USING", pattern: /using/i, categories: [Keyword], longer_alt: Identifier })
+const VACUUM = createToken({ name: "VACUUM", pattern: /vacuum/i, categories: [Keyword], longer_alt: Identifier })
+const VALUES = createToken({ name: "VALUES", pattern: /values/i, categories: [Keyword], longer_alt: Identifier })
+const VIEW = createToken({ name: "VIEW", pattern: /view/i, categories: [Keyword], longer_alt: Identifier })
+const VIRTUAL = createToken({ name: "VIRTUAL", pattern: /virtual/i, categories: [Keyword], longer_alt: Identifier })
+const WHEN = createToken({ name: "WHEN", pattern: /when/i, categories: [Keyword], longer_alt: Identifier })
+const WHERE = createToken({ name: "WHERE", pattern: /where/i, categories: [Keyword], longer_alt: Identifier })
+const WITH = createToken({ name: "WITH", pattern: /with/i, categories: [Keyword], longer_alt: Identifier })
+const WITHOUT = createToken({ name: "WITHOUT", pattern: /without/i, categories: [Keyword], longer_alt: Identifier })
 
 const keywordTokens = [
-  K_ABORT, K_ACTION, K_ADD, K_AFTER, K_ALL,
-  K_ALTER, K_ANALYZE, K_AND, K_ASC, K_AS,
-  K_ATTACH, K_AUTOINCREMENT, K_BEFORE, K_BEGIN,
-  K_BETWEEN, K_BY, K_CASCADE, K_CASE, K_CAST,
-  K_CHECK, K_COLLATE, K_COLUMN, K_COMMIT,
-  K_CONFLICT, K_CONSTRAINT, K_CREATE, K_CROSS,
-  K_CURRENT_DATE, K_CURRENT_TIMESTAMP, K_CURRENT_TIME,
-  K_DATABASE, K_DEFAULT, K_DEFERRABLE, K_DEFERRED, K_DELETE,
-  K_DESC, K_DETACH, K_DISTINCT, K_DROP, K_EACH,
-  K_ELSE, K_END, K_ESCAPE, K_EXCEPT, K_EXCLUSIVE,
-  K_EXISTS, K_EXPLAIN, K_FAIL, K_FOREIGN, K_FOR,
-  K_FROM, K_FULL, K_GLOB, K_GROUP, K_HAVING, K_IF,
-  K_IGNORE, K_IMMEDIATE, K_INTO, K_INSTEAD, K_INTERSECT,
-  K_INSERT, K_INNER, K_INITIALLY, K_INDEXED, K_INDEX, K_IN,
-  K_ISNULL, K_IS, K_JOIN, K_KEY, K_LEFT, K_LIKE,
-  K_LIMIT, K_MATCH, K_NATURAL, K_NOTNULL, K_NOT, K_NO,
-  K_NULL, K_OFFSET, K_OF, K_ON, K_ORDER, K_OR, K_OUTER,
-  K_PLAN, K_PRAGMA, K_PRIMARY, K_QUERY, K_RAISE, K_RECURSIVE,
-  K_REFERENCES, K_REGEXP, K_REINDEX, K_RELEASE, K_RENAME,
-  K_REPLACE, K_RESTRICT, K_RIGHT, K_ROLLBACK, K_ROW, K_SAVEPOINT,
-  K_SELECT, K_SET, K_TABLE, K_TEMPORARY, K_TEMP, K_THEN,
-  K_TO, K_TRANSACTION, K_TRIGGER, K_UNION, K_UNIQUE, K_UPDATE,
-  K_USING, K_VACUUM, K_VALUES, K_VIEW, K_VIRTUAL,
-  K_WHEN, K_WHERE, K_WITHOUT, K_WITH,
+  ABORT, ACTION, ADD, AFTER, ALL,
+  ALTER, ANALYZE, AND, ASC, AS,
+  ATTACH, AUTOINCREMENT, BEFORE, BEGIN,
+  BETWEEN, BY, CASCADE, CASE, CAST,
+  CHECK, COLLATE, COLUMN, COMMIT,
+  CONFLICT, CONSTRAINT, CREATE, CROSS,
+  CURRENT_DATE, CURRENT_TIMESTAMP, CURRENT_TIME,
+  DATABASE, DEFAULT, DEFERRABLE, DEFERRED, DELETE,
+  DESC, DETACH, DISTINCT, DROP, EACH,
+  ELSE, END, ESCAPE, EXCEPT, EXCLUSIVE,
+  EXISTS, EXPLAIN, FAIL, FOREIGN, FOR,
+  FROM, FULL, GLOB, GROUP, HAVING, IF,
+  IGNORE, IMMEDIATE, INTO, INSTEAD, INTERSECT,
+  INSERT, INNER, INITIALLY, INDEXED, INDEX, IN,
+  ISNULL, IS, JOIN, KEY, LEFT, LIKE,
+  LIMIT, MATCH, NATURAL, NOTNULL, NOT, NO,
+  NULL, OFFSET, OF, ON, ORDER, OR, OUTER,
+  PLAN, PRAGMA, PRIMARY, QUERY, RAISE, RECURSIVE,
+  REFERENCES, REGEXP, REINDEX, RELEASE, RENAME,
+  REPLACE, RESTRICT, RIGHT, ROLLBACK, ROW, SAVEPOINT,
+  SELECT, SET, TABLE, TEMPORARY, TEMP, THEN,
+  TO, TRANSACTION, TRIGGER, UNION, UNIQUE, UPDATE,
+  USING, VACUUM, VALUES, VIEW, VIRTUAL,
+  WHEN, WHERE, WITHOUT, WITH,
 ]
 
 const allTokens = [
@@ -357,7 +357,7 @@ const allTokens = [
   // Keywords
   ...keywordTokens,
   Keyword,
-  // Literals
+  // Identifier and Literals
   Identifier,
   BindParameter,
   StringLiteral,
@@ -367,9 +367,9 @@ const allTokens = [
   SinglelineComment,
   MultilineComment,
 ]
-const SelectLexer = new Lexer(allTokens)
+export const SelectLexer = new Lexer(allTokens)
 
-class SelectSqlParser extends Parser {
+export class SelectParser extends Parser {
   constructor() {
     super(allTokens, {
       maxLookahead: 4,
@@ -382,6 +382,9 @@ class SelectSqlParser extends Parser {
           OR2: true,
         },
         result_column: {
+          OR: true,
+        },
+        expr: {
           OR: true,
         },
         atomic_expr: {
@@ -400,7 +403,14 @@ class SelectSqlParser extends Parser {
   // about the API of our Parser, so referencing an invalid rule name (this.SUBRULE(this.oopsType);)
   // is now a TypeScript compilation error.
   public sql_stmt = this.RULE("sql_stmt", () => {
-    this.SUBRULE(this.select_stmt)
+    this.MANY(() => this.CONSUME(Scol))
+    this.MANY_SEP({
+      SEP: Scol,
+      DEF: () => {
+        this.SUBRULE(this.select_stmt)
+      }
+    })
+    this.MANY1(() => this.CONSUME1(Scol))
   })
 
   /**
@@ -413,20 +423,20 @@ class SelectSqlParser extends Parser {
       this.SUBRULE(this.compound_operator)
       this.SUBRULE2(this.select_core)
     })
-    this.OPTION2(() => { // K_ORDER
-      this.CONSUME(K_ORDER)
-      this.CONSUME(K_BY)
+    this.OPTION2(() => { // ORDER
+      this.CONSUME(ORDER)
+      this.CONSUME(BY)
       this.AT_LEAST_ONE_SEP({
         SEP: Comma,
         DEF: () => this.SUBRULE(this.ordering_term)
       })
     })
-    this.OPTION3(() => { // K_LIMIT
-      this.CONSUME(K_LIMIT)
+    this.OPTION3(() => { // LIMIT
+      this.CONSUME(LIMIT)
       this.SUBRULE(this.expr)
       this.OPTION4(() => {
         this.OR([
-          { ALT: () => this.CONSUME(K_OFFSET) },
+          { ALT: () => this.CONSUME(OFFSET) },
           { ALT: () => this.CONSUME(Comma) },
         ])
         this.SUBRULE1(this.expr)
@@ -440,11 +450,11 @@ class SelectSqlParser extends Parser {
   private select_core = this.RULE("select_core", () => {
     this.OR([
       { ALT: () => {
-        this.CONSUME(K_SELECT)
+        this.CONSUME(SELECT)
         this.OPTION(() => {
           this.OR1([
-            { ALT: () => this.CONSUME(K_DISTINCT) },
-            { ALT: () => this.CONSUME(K_ALL) },
+            { ALT: () => this.CONSUME(DISTINCT) },
+            { ALT: () => this.CONSUME(ALL) },
           ])
         })
         this.AT_LEAST_ONE_SEP({
@@ -452,28 +462,28 @@ class SelectSqlParser extends Parser {
           DEF: () => this.SUBRULE(this.result_column)
         })
 
-        this.CONSUME(K_FROM) // K_FROM
+        this.CONSUME(FROM) // FROM
         this.SUBRULE(this.table_or_subquery)
 
-        this.OPTION3(() => { // K_WHERE
-          this.CONSUME(K_WHERE)
+        this.OPTION3(() => { // WHERE
+          this.CONSUME(WHERE)
           this.SUBRULE(this.expr)
         })
-        this.OPTION4(() => { // K_GROUP
-          this.CONSUME(K_GROUP)
-          this.CONSUME1(K_BY)
+        this.OPTION4(() => { // GROUP
+          this.CONSUME(GROUP)
+          this.CONSUME1(BY)
           this.AT_LEAST_ONE_SEP2({
             SEP: Comma,
             DEF: this.SUBRULE1(this.expr),
           })
           this.OPTION5(() => { // Having
-            this.CONSUME(K_HAVING)
+            this.CONSUME(HAVING)
             this.SUBRULE2(this.expr)
           })
         })
       }},
       { ALT: () => {
-        this.CONSUME(K_VALUES)
+        this.CONSUME(VALUES)
         this.CONSUME(OpenPar)
         this.AT_LEAST_ONE_SEP3({
           SEP: Comma,
@@ -510,25 +520,24 @@ class SelectSqlParser extends Parser {
 
   // TODO
   private expr = this.RULE("expr", () => {
-    this.SUBRULE(this.or_expr)
-    // this.OR([
-    //   { ALT: () => this.SUBRULE(this.or_expr) },
-    //   // NOT IMPLEMENT: function_name '(' ( K_DISTINCT? expr ( ',' expr )* | '*' )? ')'
-    //   { ALT: () => {
-    //     this.CONSUME(OpenPar)
-    //     this.SUBRULE5(this.expr)
-    //     this.CONSUME(ClosePar)
-    //   }},
-    //   { ALT: () => {
-    //     this.CONSUME(K_CAST)
-    //     this.CONSUME1(OpenPar)
-    //     this.SUBRULE6(this.expr)
-    //     this.CONSUME(K_AS)
-    //     this.SUBRULE(this.type_name)
-    //     this.CONSUME1(ClosePar)
-    //   }},
-    //   // TODO rest after K_COLLATE
-    // ])
+    this.OR([
+      { ALT: () => this.SUBRULE(this.or_expr) },
+      // NOT IMPLEMENT: function_name '(' ( DISTINCT? expr ( ',' expr )* | '*' )? ')'
+      { ALT: () => {
+        this.CONSUME(OpenPar)
+        this.SUBRULE(this.expr)
+        this.CONSUME(ClosePar)
+      }},
+      { ALT: () => {
+        this.CONSUME(CAST)
+        this.CONSUME1(OpenPar)
+        this.SUBRULE6(this.expr)
+        this.CONSUME(AS)
+        this.SUBRULE(this.type_name)
+        this.CONSUME1(ClosePar)
+      }},
+      // TODO rest after COLLATE
+    ])
   })
 
   private atomic_expr = this.RULE("atomic_expr", () => {
@@ -620,16 +629,16 @@ class SelectSqlParser extends Parser {
         { ALT: () => this.CONSUME(Eq) },
         { ALT: () => this.CONSUME(NotEq1) },
         { ALT: () => this.CONSUME(NotEq2) },
-        { ALT: () => this.CONSUME(K_IS) },
+        { ALT: () => this.CONSUME(IS) },
         { ALT: () => {
-          this.CONSUME1(K_IS)
-          this.CONSUME(K_NOT)
+          this.CONSUME1(IS)
+          this.CONSUME(NOT)
         }},
-        { ALT: () => this.CONSUME(K_IN) },
-        { ALT: () => this.CONSUME(K_LIKE) },
-        { ALT: () => this.CONSUME(K_GLOB) },
-        { ALT: () => this.CONSUME(K_MATCH) },
-        { ALT: () => this.CONSUME(K_REGEXP) },
+        { ALT: () => this.CONSUME(IN) },
+        { ALT: () => this.CONSUME(LIKE) },
+        { ALT: () => this.CONSUME(GLOB) },
+        { ALT: () => this.CONSUME(MATCH) },
+        { ALT: () => this.CONSUME(REGEXP) },
       ])
       this.SUBRULE1(this.binary_expr)
     })
@@ -641,7 +650,7 @@ class SelectSqlParser extends Parser {
   private and_expr = this.RULE("and_expr", () => {
     this.SUBRULE(this.syntax_expr)
     this.MANY(() => {
-      this.CONSUME(K_AND)
+      this.CONSUME(AND)
       this.SUBRULE1(this.syntax_expr)
     })
   })
@@ -652,7 +661,7 @@ class SelectSqlParser extends Parser {
   private or_expr = this.RULE("or_expr", () => {
     this.SUBRULE(this.and_expr)
     this.MANY(() => {
-      this.CONSUME(K_OR)
+      this.CONSUME(OR)
       this.SUBRULE1(this.and_expr)
     })
   })
@@ -663,13 +672,13 @@ class SelectSqlParser extends Parser {
   private ordering_term = this.RULE("ordering_term", () => {
     this.SUBRULE(this.expr)
     this.OPTION(() => {
-      this.CONSUME(K_COLLATE)
+      this.CONSUME(COLLATE)
       this.SUBRULE(this.collation_name)
     })
     this.OPTION2(() => {
       this.OR([
-        { ALT: () => this.CONSUME(K_ASC) },
-        { ALT: () => this.CONSUME(K_DESC) },
+        { ALT: () => this.CONSUME(ASC) },
+        { ALT: () => this.CONSUME(DESC) },
       ])
     })
   })
@@ -688,7 +697,7 @@ class SelectSqlParser extends Parser {
       { ALT: () => {
         this.SUBRULE(this.expr)
         this.OPTION(() => {
-          this.OPTION2(() => this.CONSUME(K_AS))
+          this.OPTION2(() => this.CONSUME(AS))
           this.SUBRULE(this.column_alias)
         })
       }},
@@ -708,19 +717,19 @@ class SelectSqlParser extends Parser {
         })
         this.SUBRULE(this.table_name)
         this.OPTION2(() => {
-          this.OPTION3(() => this.CONSUME(K_AS))
+          this.OPTION3(() => this.CONSUME(AS))
           this.SUBRULE(this.table_alias)
         })
         this.OPTION4(() => {
           this.OR1([
             { ALT: () => {
-              this.CONSUME(K_INDEXED)
-              this.CONSUME(K_BY)
+              this.CONSUME(INDEXED)
+              this.CONSUME(BY)
               this.SUBRULE(this.index_name)
             }},
             { ALT: () => {
-              this.CONSUME(K_NOT)
-              this.CONSUME1(K_INDEXED)
+              this.CONSUME(NOT)
+              this.CONSUME1(INDEXED)
             }},
           ])
         })
@@ -738,7 +747,7 @@ class SelectSqlParser extends Parser {
         ])
         this.CONSUME(ClosePar)
         this.OPTION5(() => {
-          this.OPTION6(() => this.CONSUME1(K_AS))
+          this.OPTION6(() => this.CONSUME1(AS))
           this.SUBRULE1(this.table_alias)
         })
       }},
@@ -747,7 +756,7 @@ class SelectSqlParser extends Parser {
         this.SUBRULE(this.select_stmt)
         this.CONSUME1(ClosePar)
         this.OPTION7(() => {
-          this.OPTION8(() => this.CONSUME2(K_AS))
+          this.OPTION8(() => this.CONSUME2(AS))
           this.SUBRULE2(this.table_alias)
         })
       }},
@@ -773,18 +782,18 @@ class SelectSqlParser extends Parser {
     this.OR([
       { ALT: () => this.CONSUME(Comma) },
       { ALT: () => {
-        this.OPTION(() => this.CONSUME(K_NATURAL))
+        this.OPTION(() => this.CONSUME(NATURAL))
         this.OPTION2(() => {
           this.OR1([
             { ALT: () => {
-              this.CONSUME(K_LEFT)
-              this.OPTION3(() => this.CONSUME(K_OUTER))
+              this.CONSUME(LEFT)
+              this.OPTION3(() => this.CONSUME(OUTER))
             }},
-            { ALT: () => this.CONSUME(K_INNER) },
-            { ALT: () => this.CONSUME(K_CROSS) },
+            { ALT: () => this.CONSUME(INNER) },
+            { ALT: () => this.CONSUME(CROSS) },
           ])
         })
-        this.CONSUME(K_JOIN)
+        this.CONSUME(JOIN)
       }},
     ])
   })
@@ -796,11 +805,11 @@ class SelectSqlParser extends Parser {
     this.OPTION(() => {
       this.OR([
         { ALT: () => {
-          this.CONSUME(K_ON)
+          this.CONSUME(ON)
           this.SUBRULE(this.expr)
         }},
         { ALT: () => {
-          this.CONSUME(K_USING)
+          this.CONSUME(USING)
           this.CONSUME(OpenPar)
           this.AT_LEAST_ONE_SEP({
             SEP: Comma,
@@ -816,8 +825,8 @@ class SelectSqlParser extends Parser {
    * With clause
    */
   private with_clause = this.RULE("with_clause", () => {
-    this.CONSUME(K_WITH)
-    this.OPTION(() => this.CONSUME(K_RECURSIVE))
+    this.CONSUME(WITH)
+    this.OPTION(() => this.CONSUME(RECURSIVE))
     this.AT_LEAST_ONE_SEP({
       SEP: Comma,
       DEF: () => this.SUBRULE(this.common_table_expression)
@@ -839,7 +848,7 @@ class SelectSqlParser extends Parser {
       })
       this.CONSUME(ClosePar)
     })
-    this.CONSUME(K_AS)
+    this.CONSUME(AS)
     this.CONSUME1(OpenPar)
     this.SUBRULE(this.select_stmt)
     this.CONSUME1(ClosePar)
@@ -848,11 +857,11 @@ class SelectSqlParser extends Parser {
   private compound_operator = this.RULE("compound_operator", () => {
     this.OR([
       { ALT: () => {
-        this.CONSUME(K_UNION)
-        this.OPTION(() => this.CONSUME(K_ALL))
+        this.CONSUME(UNION)
+        this.OPTION(() => this.CONSUME(ALL))
       }},
-      { ALT: () => this.CONSUME(K_INTERSECT) },
-      { ALT: () => this.CONSUME(K_EXCEPT) },
+      { ALT: () => this.CONSUME(INTERSECT) },
+      { ALT: () => this.CONSUME(EXCEPT) },
     ])
   })
 
@@ -877,10 +886,10 @@ class SelectSqlParser extends Parser {
       { ALT: () => this.CONSUME(NumericLiteral) },
       { ALT: () => this.CONSUME(StringLiteral) },
       { ALT: () => this.CONSUME(BlobLiteral) },
-      { ALT: () => this.CONSUME(K_NULL) },
-      { ALT: () => this.CONSUME(K_CURRENT_TIME) },
-      { ALT: () => this.CONSUME(K_CURRENT_DATE) },
-      { ALT: () => this.CONSUME(K_CURRENT_TIMESTAMP) },
+      { ALT: () => this.CONSUME(NULL) },
+      { ALT: () => this.CONSUME(CURRENT_TIME) },
+      { ALT: () => this.CONSUME(CURRENT_DATE) },
+      { ALT: () => this.CONSUME(CURRENT_TIMESTAMP) },
     ])
   })
 
@@ -892,7 +901,7 @@ class SelectSqlParser extends Parser {
       { ALT: () => this.CONSUME(Minus) },
       { ALT: () => this.CONSUME(Plus) },
       { ALT: () => this.CONSUME(Tilde) },
-      { ALT: () => this.CONSUME(K_NOT) },
+      { ALT: () => this.CONSUME(NOT) },
     ])
   })
 
@@ -923,7 +932,6 @@ class SelectSqlParser extends Parser {
   private any_name = this.RULE("any_name", () => {
     this.OR([
       { ALT: () => this.CONSUME(Identifier) },
-      { ALT: () => this.CONSUME(Keyword) },
       { ALT: () => this.CONSUME(StringLiteral) },
       { ALT: () => {
         this.CONSUME(OpenPar)
@@ -935,7 +943,7 @@ class SelectSqlParser extends Parser {
 }
 
 // reuse the same parser instance.
-const parser = new SelectSqlParser()
+export const parser = new SelectParser()
 
 export function parse(text: string) {
   const lexResult = SelectLexer.tokenize(text)
