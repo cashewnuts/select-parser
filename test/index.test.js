@@ -43,6 +43,20 @@ describe('Normal parse', () => {
     expect(lexErrors).toHaveLength(0)
     expect(parseErrors).toHaveLength(0)
   })
+
+  test('parse where has parentheses + or + and expression', () => {
+    var result = parse("SELECT * from x WHERE (test = '1') or (test2 = '2') and (test3 = '3')")
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
+  })
+
+  test('parse nested expression in where clause', () => {
+    var result = parse("SELECT * from x WHERE ((((test = '1') or (test2 = '2')) and (test3 = '3')) or (test4 = 4) and (test5 = 5)) and (test6 = 6)")
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(0)
+  })
 })
 
 

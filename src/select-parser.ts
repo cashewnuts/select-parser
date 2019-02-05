@@ -520,28 +520,16 @@ export class SelectParser extends Parser {
 
   // TODO
   private expr = this.RULE("expr", () => {
-    this.OR([
-      { ALT: () => this.SUBRULE(this.or_expr) },
-      // NOT IMPLEMENT: function_name '(' ( DISTINCT? expr ( ',' expr )* | '*' )? ')'
-      { ALT: () => {
-        this.CONSUME(OpenPar)
-        this.SUBRULE(this.expr)
-        this.CONSUME(ClosePar)
-      }},
-      { ALT: () => {
-        this.CONSUME(CAST)
-        this.CONSUME1(OpenPar)
-        this.SUBRULE6(this.expr)
-        this.CONSUME(AS)
-        this.SUBRULE(this.type_name)
-        this.CONSUME1(ClosePar)
-      }},
-      // TODO rest after COLLATE
-    ])
+    this.SUBRULE(this.or_expr)
   })
 
   private atomic_expr = this.RULE("atomic_expr", () => {
     this.OR([
+      { ALT: () => {
+        this.CONSUME(OpenPar)
+        this.SUBRULE1(this.expr)
+        this.CONSUME(ClosePar)
+      }},
       { ALT: () => this.SUBRULE(this.literal_value) },
       { ALT: () => this.CONSUME(BindParameter) },
       { ALT: () => {
@@ -559,6 +547,16 @@ export class SelectParser extends Parser {
         this.SUBRULE(this.unary_operator)
         this.SUBRULE(this.expr)
       }},
+      { ALT: () => {
+        this.CONSUME(CAST)
+        this.CONSUME1(OpenPar)
+        this.SUBRULE2(this.expr)
+        this.CONSUME(AS)
+        this.SUBRULE(this.type_name)
+        this.CONSUME1(ClosePar)
+      }},
+      // NOT IMPLEMENT: function_name '(' ( DISTINCT? expr ( ',' expr )* | '*' )? ')'
+      // TODO rest after COLLATE
     ])
   })
 
@@ -710,7 +708,6 @@ export class SelectParser extends Parser {
   private table_or_subquery = this.RULE("table_or_subquery", () => {
     this.OR([
       { ALT: () => {
-        // TODO
         this.OPTION(() => {
           this.SUBRULE(this.database_name)
           this.CONSUME(Dot)
