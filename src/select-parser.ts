@@ -375,7 +375,8 @@ export class SelectParser extends Parser {
       maxLookahead: 4,
       ignoredIssues: {
         select_core: {
-          OR2: true
+          OR2: true,
+          OR3: true,
         },
         table_or_subquery: {
           OR: true,
@@ -389,6 +390,7 @@ export class SelectParser extends Parser {
         },
         atomic_expr: {
           OR: true,
+          OR2: true,
         },
         syntax_expr: {
           OR4: true
@@ -404,11 +406,10 @@ export class SelectParser extends Parser {
   // is now a TypeScript compilation error.
   public sql_stmt = this.RULE("sql_stmt", () => {
     this.MANY(() => this.CONSUME(Scol))
-    this.MANY_SEP({
-      SEP: Scol,
-      DEF: () => {
-        this.SUBRULE(this.select_stmt)
-      }
+    this.SUBRULE(this.select_stmt)
+    this.MANY2(() => {
+      this.AT_LEAST_ONE(() => this.CONSUME2(Scol))
+      this.SUBRULE1(this.select_stmt)
     })
     this.MANY1(() => this.CONSUME1(Scol))
   })
@@ -463,7 +464,15 @@ export class SelectParser extends Parser {
         })
 
         this.CONSUME(FROM) // FROM
-        this.SUBRULE(this.table_or_subquery)
+        this.OR3([
+          { ALT: () => {
+            this.AT_LEAST_ONE_SEP1({
+              SEP: Comma,
+              DEF: () => this.SUBRULE(this.table_or_subquery)
+            })
+          }},
+          { ALT: () => this.SUBRULE(this.join_clause)},
+        ])
 
         this.OPTION3(() => { // WHERE
           this.CONSUME(WHERE)
@@ -530,18 +539,41 @@ export class SelectParser extends Parser {
         this.SUBRULE1(this.expr)
         this.CONSUME(ClosePar)
       }},
+      { ALT: () => { // function name
+        this.SUBRULE(this.function_name)
+        this.CONSUME2(OpenPar)
+        this.OPTION3(() => {
+          this.OR1([
+            { ALT: () => {
+              this.OPTION4(() => this.CONSUME(DISTINCT))
+              this.AT_LEAST_ONE_SEP({
+                SEP: Comma,
+                DEF: () => this.SUBRULE3(this.expr)
+              })
+            }},
+            { ALT: () => this.CONSUME(Star)},
+          ])
+        })
+        this.CONSUME2(ClosePar)
+      }},
       { ALT: () => this.SUBRULE(this.literal_value) },
       { ALT: () => this.CONSUME(BindParameter) },
       { ALT: () => {
-        this.OPTION(() => {
-          this.OPTION2(() => {
+        this.OR2([
+          { ALT: () => {
             this.SUBRULE(this.database_name)
-            this.CONSUME(Dot)
-          })
-          this.SUBRULE(this.table_name)
-          this.CONSUME1(Dot)
-        })
-        this.SUBRULE(this.column_name)
+            this.CONSUME3(Dot)
+            this.SUBRULE1(this.table_name)
+            this.CONSUME2(Dot)
+            this.SUBRULE2(this.column_name)
+          }},
+          { ALT: () => {
+            this.SUBRULE(this.table_name)
+            this.CONSUME1(Dot)
+            this.SUBRULE1(this.column_name)
+          }},
+          { ALT: () => this.SUBRULE(this.column_name)},
+        ])
       }},
       { ALT: () => {
         this.SUBRULE(this.unary_operator)
@@ -555,7 +587,6 @@ export class SelectParser extends Parser {
         this.SUBRULE(this.type_name)
         this.CONSUME1(ClosePar)
       }},
-      // NOT IMPLEMENT: function_name '(' ( DISTINCT? expr ( ',' expr )* | '*' )? ')'
       // TODO rest after COLLATE
     ])
   })
@@ -616,11 +647,24 @@ export class SelectParser extends Parser {
     })
   })
 
+  private compare_expr = this.RULE("compare_expr", () => {
+    this.SUBRULE(this.binary_expr)
+    this.MANY(() => {
+      this.OR4([
+        { ALT: () => this.CONSUME(Lt) },
+        { ALT: () => this.CONSUME(LtEq) },
+        { ALT: () => this.CONSUME(Gt) },
+        { ALT: () => this.CONSUME(GtEq) },
+      ])
+      this.SUBRULE1(this.binary_expr)
+    })
+  })
+
   /**
    * Syntax expr
    */
   private syntax_expr = this.RULE("syntax_expr", () => {
-    this.SUBRULE(this.binary_expr)
+    this.SUBRULE(this.compare_expr)
     this.MANY(() => {
       this.OR4([
         { ALT: () => this.CONSUME(Assign) },
@@ -638,7 +682,7 @@ export class SelectParser extends Parser {
         { ALT: () => this.CONSUME(MATCH) },
         { ALT: () => this.CONSUME(REGEXP) },
       ])
-      this.SUBRULE1(this.binary_expr)
+      this.SUBRULE1(this.compare_expr)
     })
   })
 
@@ -917,6 +961,7 @@ export class SelectParser extends Parser {
    */
   private name = this.RULE("name", () => this.SUBRULE(this.any_name))
   private collation_name = this.RULE("collation_name", () => this.SUBRULE(this.any_name))
+  private function_name = this.RULE("function_name", () => this.SUBRULE(this.any_name))
   private database_name = this.RULE("database_name", () => this.SUBRULE(this.any_name))
   private table_name = this.RULE("table_name", () => this.SUBRULE(this.any_name))
   private table_alias = this.RULE("table_alias", () => this.SUBRULE(this.any_name))
