@@ -43,16 +43,25 @@ describe('VISITOR', () => {
       // TODO check logic
       logger.log(ast)
     })
-
   })
 
-  test('visit expr', () => {
-    var result = parse("SELECT * FROM x WHERE (test = '1')")
-    const { cst, lexErrors, parseErrors } = result
-    const ast = visitor.visit(cst)
-    // TODO check logic
-    // logger.log(ast)
+  describe('TEST expr', () => {
+    test('compare1 Assign', () => {
+      var result = parse("SELECT * FROM x WHERE test = '1'")
+      const { cst, lexErrors, parseErrors } = result
+      const ast = visitor.visit(cst)
+      // TODO check logic
+      logger.log(ast)
+    })
+    test('parenthasis expr', () => {
+      var result = parse("SELECT * FROM x WHERE (test = '1')")
+      const { cst, lexErrors, parseErrors } = result
+      const ast = visitor.visit(cst)
+      // TODO check logic
+      // logger.log(ast)
+    })
   })
+
   test('visit multiple sql_stmt', () => {
     var result = parse("SELECT * FROM x; SELECT * FROM y;")
     const { cst, lexErrors, parseErrors } = result

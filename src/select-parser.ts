@@ -391,7 +391,7 @@ export class SelectParser extends Parser {
           OR: true,
           OR2: true,
         },
-        syntax_expr: {
+        compare_expr1: {
           OR4: true
         }
       }
@@ -500,59 +500,74 @@ export class SelectParser extends Parser {
 
   private atomic_expr = this.RULE("atomic_expr", () => {
     this.OR([
-      { ALT: () => {
-        this.CONSUME(OpenPar)
-        this.SUBRULE1(this.expr)
-        this.CONSUME(ClosePar)
-      }},
-      { ALT: () => { // function name
-        this.SUBRULE(this.function_name)
-        this.CONSUME2(OpenPar)
-        this.OPTION3(() => {
-          this.OR1([
+      {
+        NAME: '$expr',
+        ALT: () => {
+          this.CONSUME(OpenPar)
+          this.SUBRULE1(this.expr)
+          this.CONSUME(ClosePar)
+        }
+      },
+      {
+        NAME: '$function',
+        ALT: () => { // function name
+          this.SUBRULE(this.function_name)
+          this.CONSUME2(OpenPar)
+          this.OPTION3(() => {
+            this.OR1([
+              { ALT: () => {
+                this.OPTION4(() => this.CONSUME(DISTINCT))
+                this.AT_LEAST_ONE_SEP({
+                  SEP: Comma,
+                  DEF: () => this.SUBRULE3(this.expr)
+                })
+              }},
+              { ALT: () => this.CONSUME(Star)},
+            ])
+          })
+          this.CONSUME2(ClosePar)
+        }
+      },
+      { NAME: '$literal', ALT: () => this.SUBRULE(this.literal_value) },
+      { NAME: '$bind', ALT: () => this.CONSUME(BindParameter) },
+      {
+        NAME: '$column',
+        ALT: () => {
+          this.OR2([
             { ALT: () => {
-              this.OPTION4(() => this.CONSUME(DISTINCT))
-              this.AT_LEAST_ONE_SEP({
-                SEP: Comma,
-                DEF: () => this.SUBRULE3(this.expr)
-              })
+              this.SUBRULE(this.database_name)
+              this.CONSUME3(Dot)
+              this.SUBRULE1(this.table_name)
+              this.CONSUME2(Dot)
+              this.SUBRULE2(this.column_name)
             }},
-            { ALT: () => this.CONSUME(Star)},
+            { ALT: () => {
+              this.SUBRULE(this.table_name)
+              this.CONSUME1(Dot)
+              this.SUBRULE1(this.column_name)
+            }},
+            { ALT: () => this.SUBRULE(this.column_name)},
           ])
-        })
-        this.CONSUME2(ClosePar)
-      }},
-      { ALT: () => this.SUBRULE(this.literal_value) },
-      { ALT: () => this.CONSUME(BindParameter) },
-      { ALT: () => {
-        this.OR2([
-          { ALT: () => {
-            this.SUBRULE(this.database_name)
-            this.CONSUME3(Dot)
-            this.SUBRULE1(this.table_name)
-            this.CONSUME2(Dot)
-            this.SUBRULE2(this.column_name)
-          }},
-          { ALT: () => {
-            this.SUBRULE(this.table_name)
-            this.CONSUME1(Dot)
-            this.SUBRULE1(this.column_name)
-          }},
-          { ALT: () => this.SUBRULE(this.column_name)},
-        ])
-      }},
-      { ALT: () => {
-        this.SUBRULE(this.unary_operator)
-        this.SUBRULE(this.expr)
-      }},
-      { ALT: () => {
-        this.CONSUME(CAST)
-        this.CONSUME1(OpenPar)
-        this.SUBRULE2(this.expr)
-        this.CONSUME(AS)
-        this.SUBRULE(this.type_name)
-        this.CONSUME1(ClosePar)
-      }},
+        }
+      },
+      {
+        NAME: '$unary_operator',
+        ALT: () => {
+          this.SUBRULE(this.unary_operator)
+          this.SUBRULE(this.expr)
+        }
+      },
+      {
+        NAME: '$cast',
+        ALT: () => {
+          this.CONSUME(CAST)
+          this.CONSUME1(OpenPar)
+          this.SUBRULE2(this.expr)
+          this.CONSUME(AS)
+          this.SUBRULE(this.type_name)
+          this.CONSUME1(ClosePar)
+        }
+      },
       // TODO rest after COLLATE
     ])
   })
@@ -613,7 +628,7 @@ export class SelectParser extends Parser {
     })
   })
 
-  private compare_expr = this.RULE("compare_expr", () => {
+  private compare_expr2 = this.RULE("compare_expr2", () => {
     this.SUBRULE(this.binary_expr)
     this.MANY(() => {
       this.OR4([
@@ -629,8 +644,8 @@ export class SelectParser extends Parser {
   /**
    * Syntax expr
    */
-  private syntax_expr = this.RULE("syntax_expr", () => {
-    this.SUBRULE(this.compare_expr)
+  private compare_expr1 = this.RULE("compare_expr1", () => {
+    this.SUBRULE(this.compare_expr2)
     this.MANY(() => {
       this.OR4([
         { ALT: () => this.CONSUME(Assign) },
@@ -648,7 +663,7 @@ export class SelectParser extends Parser {
         { ALT: () => this.CONSUME(MATCH) },
         { ALT: () => this.CONSUME(REGEXP) },
       ])
-      this.SUBRULE1(this.compare_expr)
+      this.SUBRULE1(this.compare_expr2)
     })
   })
 
@@ -656,10 +671,10 @@ export class SelectParser extends Parser {
    * And expr
    */
   private and_expr = this.RULE("and_expr", () => {
-    this.SUBRULE(this.syntax_expr)
+    this.SUBRULE(this.compare_expr1)
     this.MANY(() => {
       this.CONSUME(AND)
-      this.SUBRULE1(this.syntax_expr)
+      this.SUBRULE1(this.compare_expr1)
     })
   })
 

@@ -1,4 +1,5 @@
 import { parser } from './select-parser'
+import * as _ from 'lodash'
 
 export const BaseSelectVisitor = parser.getBaseCstVisitorConstructor()
 export const BaseSelectVisitorWithDefautls = parser.getBaseCstVisitorConstructorWithDefaults()
@@ -59,64 +60,194 @@ export class SelectVisitor extends BaseSelectVisitor {
 
     let table = this.visit(ctx.join_clause)
 
+    let where
+    if (ctx.WHERE) {
+      where = this.visit(ctx.expr.shift())
+    }
+
     return {
       type: 'SELECT_CLAUSE',
       select: columns,
       from: table,
-      where: null,
+      where: where,
       distinct: !!ctx.DISTINCT,
       groupBy: null,
       having: null,
     }
   }
   expr(ctx: any) {
-    return {
-      type: "EXPRESSION",
-    }
+    return this.visit(ctx.or_expr)
   }
   atomic_expr(ctx: any) {
+    let target
+    if (target = ctx.$expr) return this.visit(target)
+    if (target = ctx.$function) return this.visit(target)
+    if (target = ctx.$literal) return this.visit(target)
+    if (target = ctx.$bind) return this.visit(target)
+    if (target = ctx.$column) return this.visit(target)
+    if (target = ctx.$unary_operator) return this.visit(target)
+    if (target = ctx.$cast) return this.visit(target)
+  }
+  atomic_expr$expr(ctx: any) {
+    return this.visit(ctx.expr)
+  }
+  atomic_expr$function(ctx: any) {
     return {
-      type: 'TYPE_NAME',
+      type: 'FUNCTION',
+      distinct: !!ctx.DISTINCT,
+      parameter: ctx.expr((v: any) => this.visit(v)),
+      star: !!ctx.Star
+    }
+  }
+  atomic_expr$literal(ctx: any) {
+    return this.visit(ctx.literal_value)
+  }
+  atomic_expr$bind(ctx: any) {
+    return {
+      type: 'BIND',
+      bind: ctx.BindParameter[0].image
+    }
+  }
+  atomic_expr$column(ctx: any) {
+    return {
+      type: 'COLUMN_NAME',
+      database: this.visit(ctx.database_name),
+      table: this.visit(ctx.table_name),
+      column: this.visit(ctx.column_name),
+    }
+  }
+  atomic_expr$unary_operator(ctx: any) {
+    return {
+      type: 'UNARY_OPERATOR',
+      operator: this.visit(ctx.unary_operator),
+      expr: this.visit(ctx.expr)
+    }
+  }
+  atomic_expr$cast(ctx: any) {
+    return {
+      type: 'CAST',
+      expr: this.visit(ctx.expr),
+      typeName: this.visit(ctx.type_name)
     }
   }
   pipe_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.atomic_expr.length === 1) {
+      return this.visit(ctx.atomic_expr[0])
+    } else {
+      return {
+        type: 'PIPE',
+        expr: ctx.atomic_expr.map((v: any) => this.visit(v))
+      }
     }
   }
   multiplication_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.pipe_expr.length === 1) {
+      return this.visit(ctx.pipe_expr[0])
+    } else {
+      let symbol
+      _.forIn(ctx, (value, key) => {
+        if (key !== 'pipe_expr') {
+          symbol = _.toUpper(value[0].image)
+        }
+      })
+      return {
+        type: 'MULTIPLICATION',
+        symbol: symbol,
+        expr: ctx.pipe_expr.map((v: any) => this.visit(v))
+      }
     }
   }
   addition_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.multiplication_expr.length === 1) {
+      return this.visit(ctx.multiplication_expr[0])
+    } else {
+      let symbol
+      _.forIn(ctx, (value, key) => {
+        if (key !== 'multiplication_expr') {
+          symbol = _.toUpper(value[0].image)
+        }
+      })
+      return {
+        type: 'ADDITION',
+        symbol: symbol,
+        expr: ctx.multiplication_expr.map((v: any) => this.visit(v))
+      }
     }
   }
   binary_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.addition_expr.length === 1) {
+      return this.visit(ctx.addition_expr[0])
+    } else {
+      let symbol
+      _.forIn(ctx, (value, key) => {
+        if (key !== 'addition_expr') {
+          symbol = _.toUpper(value[0].image)
+        }
+      })
+      return {
+        type: 'BINARY',
+        symbol: symbol,
+        expr: ctx.addition_expr.map((v: any) => this.visit(v))
+      }
     }
   }
-  compare_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+  compare_expr2(ctx: any) {
+    if (ctx.binary_expr.length === 1) {
+      return this.visit(ctx.binary_expr[0])
+    } else {
+      let symbol
+      _.forIn(ctx, (value, key) => {
+        if (key !== 'binary_expr') {
+          symbol = _.toUpper(value[0].image)
+        }
+      })
+      return {
+        type: 'COMPARE2',
+        symbol: symbol,
+        expr: ctx.binary_expr.map((v: any) => this.visit(v))
+      }
     }
   }
-  syntax_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+  compare_expr1(ctx: any) {
+    if (ctx.compare_expr2.length === 1) {
+      return this.visit(ctx.compare_expr2[0])
+    } else {
+      let symbol
+      if (ctx.IS) {
+        symbol = 'IS'
+        if (ctx.NOT) symbol += '_NOT'
+      } else {
+        _.forIn(ctx, (value, key) => {
+          if (key !== 'compare_expr2') {
+            symbol = _.toUpper(value[0].image)
+          }
+        })
+      }
+      return {
+        type: 'COMPARE1',
+        symbol: symbol,
+        expr: ctx.compare_expr2.map((v: any) => this.visit(v))
+      }
     }
   }
   and_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.compare_expr1.length === 1) {
+      return this.visit(ctx.compare_expr1[0])
+    } else {
+      return {
+        type: 'AND',
+        expr: ctx.compare_expr1.map((v: any) => this.visit(v))
+      }
     }
   }
   or_expr(ctx: any) {
-    return {
-      type: 'TYPE_NAME',
+    if (ctx.and_expr.length === 1) {
+      return this.visit(ctx.and_expr[0])
+    } else {
+      return {
+        type: 'OR',
+        expr: ctx.and_expr.map((v: any) => this.visit(v))
+      }
     }
   }
   ordering_term(ctx: any) {
@@ -260,13 +391,26 @@ export class SelectVisitor extends BaseSelectVisitor {
     }
   }
   literal_value(ctx: any) {
+    let value
+    let target
+    if (target = ctx.NumericLiteral) value = target[0].image
+    if (target = ctx.StringLiteral) value = target[0].image.slice(1, -1)
+    if (target = ctx.BlobLiteral) value = target[0].image
     return {
-      type: 'TYPE_NAME',
+      type: 'LITERAL_VALUE',
+      value: value,
+      symbol: _.keys(ctx)[0],
     }
   }
   unary_operator(ctx: any) {
+    let value
+    if (ctx.Minus) value = '-'
+    if (ctx.Plus) value = '+'
+    if (ctx.Tilde) value = '~'
+    if (ctx.NOT) value = 'NOT'
     return {
-      type: 'TYPE_NAME',
+      type: 'UNARY_OPERATOR',
+      operator: value,
     }
   }
   column_alias(ctx: any) {
@@ -306,7 +450,8 @@ export class SelectVisitor extends BaseSelectVisitor {
   any_name(ctx: any) {
     let name
     if (ctx.Identifier) name = ctx.Identifier[0].image
-    if (ctx.StringLiteral) name = ctx.StringLiteral[0].image
+    if (['`', '"', '['].indexOf(name[0])) name = name.slice(1, -1)
+    if (ctx.StringLiteral) name = ctx.StringLiteral[0].image.slice(1, -1)
     if (ctx.any_name) {
       return this.visit(ctx.any_name)
     }
