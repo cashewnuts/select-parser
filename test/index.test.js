@@ -105,4 +105,11 @@ describe('Error', () => {
     expect(lexErrors).toHaveLength(0)
     expect(parseErrors).toHaveLength(1)
   })
+
+  test('error when table join with comma and has on clause', () => {
+    var result = parse('SELECT * FROM x, y on x.id = y.id')
+    const { cst, lexErrors, parseErrors } = result
+    expect(lexErrors).toHaveLength(0)
+    expect(parseErrors).toHaveLength(1)
+  })
 })

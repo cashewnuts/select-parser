@@ -380,7 +380,6 @@ export class SelectParser extends Parser {
         },
         table_or_subquery: {
           OR: true,
-          OR2: true,
         },
         result_column: {
           OR: true,
@@ -436,10 +435,7 @@ export class SelectParser extends Parser {
       this.CONSUME(LIMIT)
       this.SUBRULE(this.expr)
       this.OPTION4(() => {
-        this.OR([
-          { ALT: () => this.CONSUME(OFFSET) },
-          { ALT: () => this.CONSUME(Comma) },
-        ])
+        this.CONSUME(OFFSET)
         this.SUBRULE1(this.expr)
       })
     })
@@ -449,67 +445,37 @@ export class SelectParser extends Parser {
    * Select core
    */
   private select_core = this.RULE("select_core", () => {
-    this.OR([
-      { ALT: () => {
-        this.CONSUME(SELECT)
-        this.OPTION(() => {
-          this.OR1([
-            { ALT: () => this.CONSUME(DISTINCT) },
-            { ALT: () => this.CONSUME(ALL) },
-          ])
-        })
-        this.AT_LEAST_ONE_SEP({
-          SEP: Comma,
-          DEF: () => this.SUBRULE(this.result_column)
-        })
+    this.CONSUME(SELECT)
+    this.OPTION(() => {
+      this.OR1([
+        { ALT: () => this.CONSUME(DISTINCT) },
+        { ALT: () => this.CONSUME(ALL) },
+      ])
+    })
+    this.AT_LEAST_ONE_SEP({
+      SEP: Comma,
+      DEF: () => this.SUBRULE(this.result_column)
+    })
 
-        this.CONSUME(FROM) // FROM
-        this.OR3([
-          { ALT: () => {
-            this.AT_LEAST_ONE_SEP1({
-              SEP: Comma,
-              DEF: () => this.SUBRULE(this.table_or_subquery)
-            })
-          }},
-          { ALT: () => this.SUBRULE(this.join_clause)},
-        ])
+    this.CONSUME(FROM) // FROM
+    this.SUBRULE(this.join_clause)
 
-        this.OPTION3(() => { // WHERE
-          this.CONSUME(WHERE)
-          this.SUBRULE(this.expr)
-        })
-        this.OPTION4(() => { // GROUP
-          this.CONSUME(GROUP)
-          this.CONSUME1(BY)
-          this.AT_LEAST_ONE_SEP2({
-            SEP: Comma,
-            DEF: this.SUBRULE1(this.expr),
-          })
-          this.OPTION5(() => { // Having
-            this.CONSUME(HAVING)
-            this.SUBRULE2(this.expr)
-          })
-        })
-      }},
-      { ALT: () => {
-        this.CONSUME(VALUES)
-        this.CONSUME(OpenPar)
-        this.AT_LEAST_ONE_SEP3({
-          SEP: Comma,
-          DEF: () => this.SUBRULE3(this.expr)
-        })
-        this.CONSUME(ClosePar)
-        this.OPTION6(() => {
-          this.CONSUME(Comma)
-          this.CONSUME1(OpenPar)
-          this.AT_LEAST_ONE_SEP4({
-            SEP: Comma,
-            DEF: () => this.SUBRULE4(this.expr)
-          })
-          this.CONSUME1(ClosePar)
-        })
-      }}
-    ])
+    this.OPTION3(() => { // WHERE
+      this.CONSUME(WHERE)
+      this.SUBRULE(this.expr)
+    })
+    this.OPTION4(() => { // GROUP
+      this.CONSUME(GROUP)
+      this.CONSUME1(BY)
+      this.AT_LEAST_ONE_SEP2({
+        SEP: Comma,
+        DEF: this.SUBRULE1(this.expr),
+      })
+      this.OPTION5(() => { // Having
+        this.CONSUME(HAVING)
+        this.SUBRULE2(this.expr)
+      })
+    })
   })
 
   /**
@@ -730,19 +696,25 @@ export class SelectParser extends Parser {
    */
   private result_column = this.RULE("result_column", () => {
     this.OR([
-      { ALT: () => this.CONSUME(Star) },
-      { ALT: () => {
-        this.SUBRULE(this.any_name)
-        this.CONSUME(Dot)
-        this.CONSUME1(Star)
-      }},
-      { ALT: () => {
-        this.SUBRULE(this.expr)
-        this.OPTION(() => {
-          this.OPTION2(() => this.CONSUME(AS))
-          this.SUBRULE(this.column_alias)
-        })
-      }},
+      { NAME: '$star', ALT: () => this.CONSUME(Star) },
+      { 
+        NAME: '$table_star',
+        ALT: () => {
+          this.SUBRULE(this.table_name)
+          this.CONSUME(Dot)
+          this.CONSUME1(Star)
+        }
+      },
+      {
+        NAME: '$column_expr',
+        ALT: () => {
+          this.SUBRULE(this.expr)
+          this.OPTION(() => {
+            this.OPTION2(() => this.CONSUME(AS))
+            this.SUBRULE(this.column_alias)
+          })
+        }
+      },
     ])
   })
 
@@ -751,57 +723,37 @@ export class SelectParser extends Parser {
    */
   private table_or_subquery = this.RULE("table_or_subquery", () => {
     this.OR([
-      { ALT: () => {
-        this.OPTION(() => {
-          this.SUBRULE(this.database_name)
-          this.CONSUME(Dot)
-        })
-        this.SUBRULE(this.table_name)
-        this.OPTION2(() => {
-          this.OPTION3(() => this.CONSUME(AS))
-          this.SUBRULE(this.table_alias)
-        })
-        this.OPTION4(() => {
-          this.OR1([
-            { ALT: () => {
-              this.CONSUME(INDEXED)
-              this.CONSUME(BY)
-              this.SUBRULE(this.index_name)
-            }},
-            { ALT: () => {
-              this.CONSUME(NOT)
-              this.CONSUME1(INDEXED)
-            }},
-          ])
-        })
-      }},
-      { ALT: () => {
-        this.CONSUME(OpenPar)
-        this.OR2([
-          { ALT: () => {
-            this.AT_LEAST_ONE_SEP({
-              SEP: Comma,
-              DEF: () => this.SUBRULE(this.table_or_subquery)
-            })
-          }},
-          { ALT: () => this.SUBRULE(this.join_clause)},
-        ])
-        this.CONSUME(ClosePar)
-        this.OPTION5(() => {
-          this.OPTION6(() => this.CONSUME1(AS))
-          this.SUBRULE1(this.table_alias)
-        })
-      }},
-      { ALT: () => {
-        this.CONSUME1(OpenPar)
-        this.SUBRULE(this.select_stmt)
-        this.CONSUME1(ClosePar)
-        this.OPTION7(() => {
-          this.OPTION8(() => this.CONSUME2(AS))
-          this.SUBRULE2(this.table_alias)
-        })
-      }},
+      { 
+        NAME: '$table',
+        ALT: () => {
+          this.OPTION(() => {
+            this.SUBRULE(this.database_name)
+            this.CONSUME(Dot)
+          })
+          this.SUBRULE(this.table_name)
+        }
+      },
+      {
+        NAME: '$nested',
+        ALT: () => {
+          this.CONSUME(OpenPar)
+          this.SUBRULE(this.join_clause)
+          this.CONSUME(ClosePar)
+        }
+      },
+      {
+        NAME: '$select_stmt',
+        ALT: () => {
+          this.CONSUME1(OpenPar)
+          this.SUBRULE(this.select_stmt)
+          this.CONSUME1(ClosePar)
+        }
+      },
     ])
+    this.OPTION2(() => {
+      this.OPTION3(() => this.CONSUME(AS))
+      this.SUBRULE(this.table_alias)
+    })
   })
 
   /**
@@ -810,9 +762,11 @@ export class SelectParser extends Parser {
   private join_clause = this.RULE("join_clause", () => {
     this.SUBRULE(this.table_or_subquery)
     this.MANY(() => {
-      this.SUBRULE(this.join_operator)
+      let oeprator = this.SUBRULE(this.join_operator)
       this.SUBRULE1(this.table_or_subquery)
-      this.SUBRULE(this.join_constraint)
+      if (!oeprator.children.Comma) {
+        this.OPTION(() => this.SUBRULE(this.join_constraint))
+      }
     })
   })
 
@@ -823,12 +777,19 @@ export class SelectParser extends Parser {
     this.OR([
       { ALT: () => this.CONSUME(Comma) },
       { ALT: () => {
-        this.OPTION(() => this.CONSUME(NATURAL))
         this.OPTION2(() => {
           this.OR1([
+            { ALT: () => this.CONSUME(NATURAL) },
             { ALT: () => {
-              this.CONSUME(LEFT)
+              this.OR2([
+                { ALT: () => this.CONSUME(LEFT) },
+                { ALT: () => this.CONSUME(RIGHT) },
+              ])
               this.OPTION3(() => this.CONSUME(OUTER))
+            }},
+            { ALT: () => {
+              this.CONSUME(FULL)
+              this.CONSUME1(OUTER)
             }},
             { ALT: () => this.CONSUME(INNER) },
             { ALT: () => this.CONSUME(CROSS) },
