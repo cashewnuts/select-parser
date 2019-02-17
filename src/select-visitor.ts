@@ -363,31 +363,55 @@ export class SelectVisitor extends BaseSelectVisitor {
       operator: operator,
     }
   }
-  // TODO
   join_constraint(ctx: any) {
-    console.log(ctx)
-    return {
-      type: 'JOIN_CONSTRAINT',
+    if (ctx.ON) {
+      return {
+        type: 'JOIN_ON',
+        expr: this.visit(ctx.expr),
+      }
+    }
+    if (ctx.USING) {
+      let columns = ctx.column_name.map((v: any) => this.visit(v))
+      return {
+        type: 'JOIN_USING',
+        columns: columns,
+      }
     }
   }
   with_clause(ctx: any) {
+    let commonTable = ctx.common_table_expression.map((v: any) => this.visit(v))
     return {
-      type: 'TYPE_NAME',
+      type: 'WITH_CLAUSE',
+      recursive: !!ctx.RECURSIVE,
+      commonTable: commonTable,
     }
   }
   common_table_expression(ctx: any) {
     return {
-      type: 'TYPE_NAME',
+      type: 'COMMAN_TABLE_EXPRESSION',
+      columns: ctx.column_name.map((v: any) => this.visit(v)),
+      select: this.visit(ctx.select_stmt)
     }
   }
   compound_operator(ctx: any) {
+    let symbol
+    if (ctx.UNION) symbol = 'UNION'
+    if (ctx.ALL) symbol += '_ALL'
+    if (ctx.INTERSECT) symbol = 'INTERSECT'
+    if (ctx.EXCEPT) symbol = 'EXCEPT'
     return {
-      type: 'TYPE_NAME',
+      type: 'COMPOUND_OPERATOR',
+      symbol: symbol,
     }
   }
   signed_number(ctx: any) {
+    let sign
+    if (ctx.Plus) sign = '+'
+    if (ctx.Minus) sign = '-'
     return {
       type: 'TYPE_NAME',
+      sign: sign,
+      value: ctx.NumericLiteral[0].image
     }
   }
   literal_value(ctx: any) {
