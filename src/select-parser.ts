@@ -458,7 +458,7 @@ export class SelectParser extends Parser {
     })
 
     this.CONSUME(FROM) // FROM
-    this.SUBRULE(this.join_clause)
+    this.SUBRULE(this.from_list)
 
     this.OPTION3(() => { // WHERE
       this.CONSUME(WHERE)
@@ -752,7 +752,7 @@ export class SelectParser extends Parser {
         NAME: '$nested',
         ALT: () => {
           this.CONSUME(OpenPar)
-          this.SUBRULE(this.join_clause)
+          this.SUBRULE(this.from_list)
           this.CONSUME(ClosePar)
         }
       },
@@ -774,7 +774,7 @@ export class SelectParser extends Parser {
   /**
    * Join clause
    */
-  private join_clause = this.RULE("join_clause", () => {
+  private from_list = this.RULE("from_list", () => {
     this.SUBRULE(this.table_or_subquery)
     this.MANY(() => {
       let oeprator = this.SUBRULE(this.join_operator)

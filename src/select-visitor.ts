@@ -58,7 +58,7 @@ export class SelectVisitor extends BaseSelectVisitor {
   select_core(ctx: any) {
     let columns = ctx.result_column.map((v:any) => this.visit(v))
 
-    let table = this.visit(ctx.join_clause)
+    let table = this.visit(ctx.from_list)
 
     let where
     if (ctx.WHERE) {
@@ -304,6 +304,7 @@ export class SelectVisitor extends BaseSelectVisitor {
     return {
       type: 'TABLE',
       ...table,
+      tableAlias: this.visit(ctx.table_alias)
     }
   }
   /**
@@ -316,17 +317,25 @@ export class SelectVisitor extends BaseSelectVisitor {
       database: this.visit(ctx.database_name),
     }
   }
-  // TODO
+  /**
+   * table_or_subquery -> $nested
+   * @param ctx 
+   */
   table_or_subquery$nested(ctx: any) {
-    const errorName = 'Subqyery'
-    throw new Error('NOT IMPLEMENTED: ' + errorName)
+    return {
+      from: this.visit(ctx.from_list)
+    }
   }
-  // TODO
+  /**
+   * table_or_subquery -> $select_stmt
+   * @param ctx 
+   */
   table_or_subquery$select_stmt(ctx: any) {
-    const errorName = 'Subqyery'
-    throw new Error('NOT IMPLEMENTED: ' + errorName)
+    return {
+      from: this.visit(ctx.select_stmt)
+    }
   }
-  join_clause(ctx: any) {
+  from_list(ctx: any) {
     const tables = ctx.table_or_subquery.map((v: any) => this.visit(v))
     if (tables.length === 1) {
       return tables[0]
