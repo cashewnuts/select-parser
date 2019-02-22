@@ -1,4 +1,5 @@
 import { parser } from './select-parser'
+import * as Types from './select-visitor-interface'
 import * as _ from 'lodash'
 
 export const BaseSelectVisitor = parser.getBaseCstVisitorConstructor()
@@ -75,10 +76,10 @@ export class SelectVisitor extends BaseSelectVisitor {
       having: null,
     }
   }
-  expr(ctx: any) {
+  expr(ctx: any): Types.IExpression {
     return this.visit(ctx.or_expr)
   }
-  atomic_expr(ctx: any) {
+  atomic_expr(ctx: any): Types.IAtomicExpression {
     let target
     if (target = ctx.$expr) return this.visit(target)
     if (target = ctx.$function) return this.visit(target)
@@ -87,132 +88,143 @@ export class SelectVisitor extends BaseSelectVisitor {
     if (target = ctx.$column) return this.visit(target)
     if (target = ctx.$unary_operator) return this.visit(target)
     if (target = ctx.$cast) return this.visit(target)
+    throw new Error('UNKNOWN ATOMIC EXPRESSION')
   }
-  atomic_expr$expr(ctx: any) {
+  atomic_expr$expr(ctx: any): Types.IExpression {
     return this.visit(ctx.expr)
   }
-  atomic_expr$function(ctx: any) {
+  atomic_expr$function(ctx: any): Types.IFunctionExpression {
+    let functionName = this.visit(ctx.function_name)
+    if (ctx.Star) {
+      return {
+        type: 'FUNCTION',
+        function: functionName,
+        isStar: true
+      }
+    }
     return {
       type: 'FUNCTION',
-      distinct: !!ctx.DISTINCT,
-      parameter: ctx.expr((v: any) => this.visit(v)),
-      star: !!ctx.Star
+      function: functionName,
+      isDistinct: !!ctx.DISTINCT,
+      parameters: ctx.expr((v: any) => this.visit(v)),
     }
   }
-  atomic_expr$literal(ctx: any) {
+  atomic_expr$literal(ctx: any): Types.ILiteralValue {
     return this.visit(ctx.literal_value)
   }
-  atomic_expr$bind(ctx: any) {
+  atomic_expr$bind(ctx: any): Types.IBind {
+    let bind = ctx.BindParameter[0].image
     return {
       type: 'BIND',
-      bind: ctx.BindParameter[0].image
+      bind: bind
     }
   }
-  atomic_expr$column(ctx: any) {
+  atomic_expr$column(ctx: any): Types.IColumn {
     return {
-      type: 'COLUMN_NAME',
+      type: 'COLUMN',
       database: this.visit(ctx.database_name),
       table: this.visit(ctx.table_name),
       column: this.visit(ctx.column_name),
     }
   }
-  atomic_expr$unary_operator(ctx: any) {
+  atomic_expr$unary_operator(ctx: any): Types.IUnaryOperator {
     return {
       type: 'UNARY_OPERATOR',
       operator: this.visit(ctx.unary_operator),
       expr: this.visit(ctx.expr)
     }
   }
-  atomic_expr$cast(ctx: any) {
+  atomic_expr$cast(ctx: any): Types.ICast {
     return {
       type: 'CAST',
+      cast: this.visit(ctx.type_name),
       expr: this.visit(ctx.expr),
-      typeName: this.visit(ctx.type_name)
     }
   }
-  pipe_expr(ctx: any) {
+  pipe_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.atomic_expr.length === 1) {
       return this.visit(ctx.atomic_expr[0])
     } else {
       return {
-        type: 'PIPE',
+        type: 'OPERATOR',
+        operator: 'PIPE',
         expr: ctx.atomic_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  multiplication_expr(ctx: any) {
+  multiplication_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.pipe_expr.length === 1) {
       return this.visit(ctx.pipe_expr[0])
     } else {
-      let symbol
+      let symbol = ''
       _.forIn(ctx, (value, key) => {
         if (key !== 'pipe_expr') {
           symbol = _.toUpper(value[0].image)
         }
       })
       return {
-        type: 'MULTIPLICATION',
-        symbol: symbol,
+        type: 'OPERATOR',
+        operator: symbol,
         expr: ctx.pipe_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  addition_expr(ctx: any) {
+  addition_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.multiplication_expr.length === 1) {
       return this.visit(ctx.multiplication_expr[0])
     } else {
-      let symbol
+      let symbol = ''
       _.forIn(ctx, (value, key) => {
         if (key !== 'multiplication_expr') {
           symbol = _.toUpper(value[0].image)
         }
       })
       return {
-        type: 'ADDITION',
-        symbol: symbol,
+        type: 'OPERATOR',
+        operator: symbol,
         expr: ctx.multiplication_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  binary_expr(ctx: any) {
+  binary_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.addition_expr.length === 1) {
       return this.visit(ctx.addition_expr[0])
     } else {
-      let symbol
+      let symbol: string = ''
       _.forIn(ctx, (value, key) => {
         if (key !== 'addition_expr') {
           symbol = _.toUpper(value[0].image)
         }
       })
       return {
-        type: 'BINARY',
-        symbol: symbol,
+        type: 'OPERATOR',
+        operator: symbol,
         expr: ctx.addition_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  compare_expr2(ctx: any) {
+  compare_expr2(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.binary_expr.length === 1) {
       return this.visit(ctx.binary_expr[0])
     } else {
-      let symbol
+      let symbol = ''
       _.forIn(ctx, (value, key) => {
         if (key !== 'binary_expr') {
           symbol = _.toUpper(value[0].image)
         }
       })
       return {
-        type: 'COMPARE2',
-        symbol: symbol,
+        type: 'OPERATOR',
+        operator: symbol,
         expr: ctx.binary_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  compare_expr1(ctx: any) {
+  compare_expr1(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.compare_expr2.length === 1) {
       return this.visit(ctx.compare_expr2[0])
     } else {
-      let symbol
+      let symbol = ''
       if (ctx.IS) {
         symbol = 'IS'
         if (ctx.NOT) symbol += '_NOT'
@@ -224,39 +236,42 @@ export class SelectVisitor extends BaseSelectVisitor {
         })
       }
       return {
-        type: 'COMPARE1',
-        symbol: symbol,
+        type: 'OPERATOR',
+        operator: symbol,
         expr: ctx.compare_expr2.map((v: any) => this.visit(v))
       }
     }
   }
-  and_expr(ctx: any) {
+  and_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.compare_expr1.length === 1) {
       return this.visit(ctx.compare_expr1[0])
     } else {
       return {
-        type: 'AND',
+        type: 'OPERATOR',
+        operator: 'AND',
         expr: ctx.compare_expr1.map((v: any) => this.visit(v))
       }
     }
   }
-  or_expr(ctx: any) {
+  or_expr(ctx: any): Types.IOperatorExpression | Types.IAtomicExpression {
     if (ctx.and_expr.length === 1) {
       return this.visit(ctx.and_expr[0])
     } else {
       return {
-        type: 'OR',
+        type: 'OPERATOR',
+        operator: 'OR',
         expr: ctx.and_expr.map((v: any) => this.visit(v))
       }
     }
   }
-  ordering_term(ctx: any) {
+  ordering_term(ctx: any): Types.IOrder {
+    let isAsc = !ctx.DESC
     return {
-      type: 'ORDER_ITEM',
+      type: 'ORDER',
       order: this.visit(ctx.expr),
       collation: this.visit(ctx.collation_name),
-      asc: !!ctx.ASC,
-      desc: !!ctx.desc,
+      isAsc: isAsc,
+      isDesc: !isAsc
     }
   }
   result_column(ctx: any) {
@@ -423,74 +438,91 @@ export class SelectVisitor extends BaseSelectVisitor {
       value: ctx.NumericLiteral[0].image
     }
   }
-  literal_value(ctx: any) {
+  literal_value(ctx: any): Types.ILiteralValue {
     let value
     let target
-    if (target = ctx.NumericLiteral) value = target[0].image
-    if (target = ctx.StringLiteral) value = target[0].image.slice(1, -1)
-    if (target = ctx.BlobLiteral) value = target[0].image
+    let type: 'NUMERIC' | 'STRING' | 'BLOB' | 'NULL' | 'CURRENT_TIME' | 'CURRENT_DATE' | 'CURRENT_TIMESTAMP' = 'NULL'
+    if (target = ctx.NumericLiteral) {
+      type = 'NUMERIC'
+      value = target[0].image
+    }
+    if (target = ctx.StringLiteral) {
+      type = 'STRING'
+      value = target[0].image.slice(1, -1)
+    }
+    if (target = ctx.BlobLiteral) {
+      type = 'BLOB'
+      value = target[0].image
+    }
+    if (ctx.NULL) type = 'NULL'
+    if (ctx.CURRENT_TIME) type = 'CURRENT_TIME'
+    if (ctx.CURRENT_DATE) type = 'CURRENT_DATE'
+    if (ctx.CURRENT_TIMESTAMP) type = 'CURRENT_TIMESTAMP'
     return {
-      type: 'LITERAL_VALUE',
+      type: type,
       value: value,
-      symbol: _.keys(ctx)[0],
     }
   }
-  unary_operator(ctx: any) {
-    let value
+  unary_operator(ctx: any): string {
+    let value = ''
     if (ctx.Minus) value = '-'
     if (ctx.Plus) value = '+'
     if (ctx.Tilde) value = '~'
     if (ctx.NOT) value = 'NOT'
-    return {
-      type: 'UNARY_OPERATOR',
-      operator: value,
-    }
+    return value
   }
-  column_alias(ctx: any) {
+  column_alias(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  name(ctx: any) {
+  name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  type_name(ctx: any) {
+  type_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  collation_name(ctx: any) {
+  collation_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  function_name(ctx: any) {
+  function_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  database_name(ctx: any) {
+  database_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  table_name(ctx: any) {
+  table_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  table_alias(ctx: any) {
+  table_alias(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  column_name(ctx: any) {
+  column_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
-  index_name(ctx: any) {
+  index_name(ctx: any): Types.IName {
     return this.visit(ctx.any_name)
   }
   /**
    * any_name
    * @param ctx 
    */
-  any_name(ctx: any) {
+  any_name(ctx: any): Types.IName {
     let name
-    if (ctx.Identifier) name = ctx.Identifier[0].image
-    if (['`', '"', '['].indexOf(name[0])) name = name.slice(1, -1)
-    if (ctx.StringLiteral) name = ctx.StringLiteral[0].image.slice(1, -1)
+    let text
+    if (ctx.Identifier) {
+      name = text = ctx.Identifier[0].image
+      if (['`', '"', '['].indexOf(name[0])) name = name.slice(1, -1)
+    }
+    if (ctx.StringLiteral) {
+      text = ctx.StringLiteral[0].image
+      name = text.slice(1, -1)
+    }
     if (ctx.any_name) {
       return this.visit(ctx.any_name)
     }
     return {
       type: 'NAME',
       name: name,
+      text: text,
     }
   }
 
