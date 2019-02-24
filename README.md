@@ -1,3 +1,2 @@
 # select-parser
-
-Select SQL parser compatible with sqlite
+Select SQL parser with basic syntax
